@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Prescriptions - MediTrack{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6>My Prescriptions</h6>
+                        <div class="d-flex">
+                            <input type="text" id="searchInput" class="form-control form-control-sm me-2" placeholder="Search prescriptions..." style="max-width: 250px;">
+                            <button class="btn btn-sm btn-outline-primary" onclick="filterPrescriptions()">
+                                <i class="fas fa-search me-1"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    {% if prescriptions %}
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0" id="prescriptionsTable">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Doctor</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Diagnosis</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Medications</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Follow-up</th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prescription in prescriptions %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex px-2 py-1">
+                                            <div class="d-flex flex-column justify-content-center">
+                                                <h6 class="mb-0 text-sm">{{ prescription.created_at|date:"M d, Y" }}</h6>
+                                                <p class="text-xs text-secondary mb-0">{{ prescription.created_at|time:"g:i A" }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ prescription.appointment.doctor.user.get_full_name }}</p>
+                                        <p class="text-xs text-secondary mb-0">{{ prescription.appointment.doctor.specialization }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ prescription.diagnosis|truncatewords:5 }}</p>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ prescription.medications|length }} medications</span>
+                                    </td>
+                                    <td>
+                                        {% if prescription.follow_up_date %}
+                                        <span class="badge bg-warning">{{ prescription.follow_up_date|date:"M d, Y" }}</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">No follow-up</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Actions
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item view-prescription" href="#" data-bs-toggle="modal" data-bs-target="#prescriptionModal{{ prescription.id }}">
+                                                        <i class="fas fa-eye me-1"></i> View Details
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{% url 'download_prescription' prescription.id %}" target="_blank">
+                                                        <i class="fas fa-download me-1"></i> Download PDF
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{% url 'share_prescription' prescription.id %}">
+                                                        <i class="fas fa-share me-1"></i> Share
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Prescription Detail Modal -->
+                                <div class="modal fade" id="prescriptionModal{{ prescription.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Prescription Details</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6>Appointment Information</h6>
+                                                        <div class="card bg-light">
+                                                            <div class="card-body">
+                                                                <p class="mb-1"><strong>Doctor:</strong> {{ prescription.appointment.doctor.user.get_full_name }}</p>
+                                                                <p class="mb-1"><strong>Specialization:</strong> {{ prescription.appointment.doctor.specialization }}</p>
+                                                                <p class="mb-1"><strong>Date:</strong> {{ prescription.appointment.date|date:"M d, Y" }}</p>
+                                                                <p class="mb-0"><strong>Time:</strong> {{ prescription.appointment.time|time:"g:i A" }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6>Prescription Information</h6>
+                                                        <div class="card bg-light">
+                                                            <div class="card-body">
+                                                                <p class="mb-1"><strong>Created:</strong> {{ prescription.created_at|date:"M d, Y" }}</p>
+                                                                {% if prescription.follow_up_date %}
+                                                                <p class="mb-1"><strong>Follow-up:</strong> {{ prescription.follow_up_date|date:"M d, Y" }}</p>
+                                                                {% endif %}
+                                                                <p class="mb-0"><strong>Status:</strong> 
+                                                                    <span class="badge bg-success">Active</span>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mt-4">
+                                                    <div class="col-md-12">
+                                                        <h6>Diagnosis</h6>
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <p class="mb-0">{{ prescription.diagnosis }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mt-4">
+                                                    <div class="col-md-12">
+                                                        <h6>Medications</h6>
+                                                        <div class="table-responsive">
+                                                            <table class="table table-sm">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Medication</th>
+                                                                        <th>Dosage</th>
+                                                                        <th>Frequency</th>
+                                                                        <th>Duration</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for med in prescription.medications %}
+                                                                    <tr>
+                                                                        <td>{{ med.name }}</td>
+                                                                        <td>{{ med.dosage }}</td>
+                                                                        <td>{{ med.frequency }}</td>
+                                                                        <td>{{ med.duration }}</td>
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {% if prescription.instructions %}
+                                                <div class="row mt-4">
+                                                    <div class="col-md-12">
+                                                        <h6>Additional Instructions</h6>
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <p class="mb-0">{{ prescription.instructions }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+
+                                                {% if prescription.follow_up_notes %}
+                                                <div class="row mt-4">
+                                                    <div class="col-md-12">
+                                                        <h6>Follow-up Notes</h6>
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <p class="mb-0">{{ prescription.follow_up_notes }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <a href="{% url 'download_prescription' prescription.id %}" class="btn btn-primary" target="_blank">
+                                                    <i class="fas fa-download me-1"></i> Download
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-prescription fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">No prescriptions found</h5>
+                        <p class="text-muted">You don't have any prescriptions yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if prescriptions.has_other_pages %}
+                <div class="card-footer">
+                    <nav aria-label="Prescription pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if prescriptions.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ prescriptions.previous_page_number }}" tabindex="-1">
+                                    <i class="fas fa-angle-left"></i>
+                                    <span class="sr-only">Previous</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for i in prescriptions.paginator.page_range %}
+                            <li class="page-item {% if prescriptions.number == i %}active{% endif %}">
+                                <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                            </li>
+                            {% endfor %}
+                            
+                            {% if prescriptions.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ prescriptions.next_page_number }}">
+                                    <i class="fas fa-angle-right"></i>
+                                    <span class="sr-only">Next</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterPrescriptions() {
+    const searchText = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#prescriptionsTable tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(searchText)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize search functionality
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('keyup', filterPrescriptions);
+    
+    // Add enter key support for search
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            filterPrescriptions();
+        }
+    });
+});
+</script>
+{% endblock %}

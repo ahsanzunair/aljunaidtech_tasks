@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Appointment Management | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/appoinment_analytics.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Appointment Management</h1>
+        <div>
+            <a href="{% url 'export_appointments' %}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-download"></i> Export CSV
+            </a>
+            <a href="{% url 'appointment_analytics' %}" class="btn btn-primary">
+                <i class="bi bi-graph-up"></i> View Analytics
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    {{ filter_form.date_from.label_tag }}
+                    {{ filter_form.date_from }}
+                </div>
+                <div class="col-md-3">
+                    {{ filter_form.date_to.label_tag }}
+                    {{ filter_form.date_to }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.status.label_tag }}
+                    {{ filter_form.status }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.doctor.label_tag }}
+                    {{ filter_form.doctor }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.patient.label_tag }}
+                    {{ filter_form.patient }}
+                </div>
+                <div class="col-md-12 mt-3">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-filter"></i> Apply Filters
+                    </button>
+                    <a href="{% url 'appointment_management' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Date & Time</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in page_obj %}
+                        <tr>
+                            <td>{{ appointment.id }}</td>
+                            <td>
+                                <strong>{{ appointment.patient.user.get_full_name }}</strong>
+                                <div class="text-muted small">{{ appointment.patient.user.email }}</div>
+                            </td>
+                            <td>
+                                <strong>Dr. {{ appointment.doctor.user.get_full_name }}</strong>
+                                <div class="text-muted small">{{ appointment.doctor.specialization }}</div>
+                            </td>
+                            <td>
+                                {{ appointment.date|date:"M d, Y" }}
+                                <div class="text-muted small">{{ appointment.time|time:"h:i A" }}</div>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if appointment.status == 'confirmed' %}bg-success
+                                    {% elif appointment.status == 'pending' %}bg-warning text-dark
+                                    {% elif appointment.status == 'cancelled' %}bg-danger
+                                    {% else %}bg-info
+                                    {% endif %}">
+                                    {{ appointment.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {{ appointment.get_reason_display }}
+                                {% if appointment.other_reason %}
+                                <div class="text-muted small">{{ appointment.other_reason }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a href="{% url 'view_appointment' appointment.id %}" 
+                                       class="btn btn-sm btn-outline-primary"
+                                       data-bs-toggle="tooltip" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4">No appointments found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-hidden="true">&laquo;</span>
+                    </li>
+                    {% endif %}
+
+                    {% for i in page_obj.paginator.page_range %}
+                        {% if page_obj.number == i %}
+                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-hidden="true">&raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            <div class="mt-3 text-muted">
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} appointments
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Enable tooltips
+    $('[data-bs-toggle="tooltip"]').tooltip();
+    
+    // Initialize datepickers
+    $('input[type="date"]').attr('max', new Date().toISOString().split('T')[0]);
+});
+</script>
+{% endblock %}

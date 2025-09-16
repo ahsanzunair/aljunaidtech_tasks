@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load system_filters %}
+
+{% block title %}System Status | MULTI-ROLE SMART APPOINTMENT & MEDICAL RECORD SYSTEM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/system_status.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>System Status</h2>
+    <a href="{% url 'system_settings' %}" class="btn btn-primary">
+                Back to System Settings <i class="bi bi-speedometer2"></i> 
+            </a>
+    </div>
+
+    <!-- Health Checks -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-{{ health_checks.database.status|get_status_class }}">
+                <div class="card-body text-center">
+                    <i class="bi bi-database display-6 text-{{ health_checks.database.status|get_status_class }}"></i>
+                    <h6 class="mt-2">Database</h6>
+                    <span class="badge bg-{{ health_checks.database.status|get_status_class }}">
+                        {{ health_checks.database.status|title }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yahan aur health checks add kar sakte ho (API, Cache, Disk etc.) -->
+    </div>
+
+    <!-- System Metrics Section -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-3">Memory Usage</h6>
+                    <div class="progress mb-2" style="height: 20px;">
+                        <div class="progress-bar bg-primary" role="progressbar"
+                             style="width: {{ system_metrics.memory_usage.percent }}%"
+                             aria-valuenow="{{ system_metrics.memory_usage.percent }}"
+                             aria-valuemin="0" aria-valuemax="100">
+                            {{ system_metrics.memory_usage.percent }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        {{ system_metrics.memory_usage.used|filesizeformat }} /
+                        {{ system_metrics.memory_usage.total|filesizeformat }}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- CPU aur Disk ka design bhi isi tarah bana sakte ho -->
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+/* Doctor Schedule Styles */
+.fc-event-confirmed {
+    background-color: #1cc88a;
+    border-color: #1cc88a;
+}
+
+.fc-event-pending {
+    background-color: #f6c23e;
+    border-color: #f6c23e;
+}
+
+.fc-event-completed {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.fc-event-cancelled {
+    background-color: #e74a3b;
+    border-color: #e74a3b;
+}
+
+.fc .fc-toolbar {
+    padding: 1rem;
+    margin: 0;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #5a5c69;
+}
+
+.fc .fc-button {
+    background-color: #4e73df;
+    border-color: #4e73df;
+    color: white;
+    text-transform: capitalize;
+    font-weight: 500;
+}
+
+.fc .fc-button:hover {
+    background-color: #2e59d9;
+    border-color: #2e59d9;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+    background-color: #2e59d9;
+    border-color: #2e59d9;
+}
+
+.fc-event {
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.fc-event:hover {
+    opacity: 0.9;
+}
+
+.time-slot {
+    align-items: center;
+}
+
+.remove-slot {
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .fc-toolbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-group {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .time-slot .col-md-2 {
+        margin-top: 10px;
+    }
+}

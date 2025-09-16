@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Clear Activity Logs | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header py-3 bg-warning">
+                    <h6 class="m-0 font-weight-bold text-dark text-center">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Clear Activity Logs
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Warning Alert -->
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> Important Warning</h5>
+                        <p class="mb-0">
+                            This action will permanently delete activity logs older than 90 days. 
+                            Deleted logs cannot be recovered.
+                        </p>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Total Logs in System</h6>
+                                    <h3 class="text-primary">{{ total_logs }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-danger">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Logs to be Deleted</h6>
+                                    <h3 class="text-danger">{{ logs_to_delete }}</h3>
+                                    <small class="text-muted">Older than {{ cutoff_date|date:"M d, Y" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Details -->
+                    <div class="mb-4">
+                        <h6>Action Details:</h6>
+                        <div class="list-group">
+                            <div class="list-group-item">
+                                <i class="bi bi-calendar-x text-danger"></i>
+                                <strong>Delete Threshold:</strong> Logs older than 90 days
+                            </div>
+                            <div class="list-group-item">
+                                <i class="bi bi-database text-danger"></i>
+                                <strong>Permanent Deletion:</strong> Records will be completely removed
+                            </div>
+                            <div class="list-group-item">
+                                <i class="bi bi-shield-exclamation text-warning"></i>
+                                <strong>Irreversible:</strong> This action cannot be undone
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Confirmation Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if logs_to_delete > 0 %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            About to delete <strong>{{ logs_to_delete }}</strong> log entries older than {{ cutoff_date|date:"M d, Y" }}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="bi bi-trash-fill"></i> Confirm Deletion
+                            </button>
+                            <a href="{% url 'activity_logs' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle"></i>
+                            No logs need to be cleared. All logs are within the 90-day retention period.
+                        </div>
+                        <a href="{% url 'activity_logs' %}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left"></i> Back to Activity Logs
+                        </a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

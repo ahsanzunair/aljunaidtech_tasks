@@ -1,0 +1,72 @@
+/* Announcements Management Styles */
+.card {
+    border: none;
+    border-radius: 0.35rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+#announcementsTable th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #4e73df;
+}
+
+.badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35em 0.65em;
+}
+
+.form-check-input:checked {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+/* Form Styles */
+#announcementForm .form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+#announcementForm .form-control, 
+#announcementForm .form-select {
+    border-radius: 0.35rem;
+    padding: 0.5rem 0.75rem;
+}
+
+#announcementForm .invalid-feedback {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #e74a3b;
+}
+
+/* Checkbox Styles */
+.form-check-input[type="checkbox"] {
+    width: 2em;
+    height: 2em;
+    margin-top: 0.25em;
+    margin-right: 0.5em;
+}
+
+.form-check-label {
+    padding-left: 0.5em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .btn-group .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}

@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Find a Doctor - MediTrack{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-md-3 col-lg-3">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Filter Doctors</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{% url 'find_doctor' %}">
+                        <!-- Search Input -->
+                        <div class="mb-3">
+                            <label for="q" class="form-label">Search by Name or Specialty</label>
+                            <input type="text" class="form-control" id="q" name="q" 
+                                   value="{{ search_query|default:'' }}" 
+                                   placeholder="Doctor name or specialty">
+                        </div>
+                        
+                        <!-- Specialization Filter -->
+                        <div class="mb-3">
+                            <label for="specialization" class="form-label">Specialization</label>
+                            <select class="form-select" id="specialization" name="specialization">
+                                <option value="">All Specialties</option>
+                                {% for spec in specializations %}
+                                    <option value="{{ spec }}" 
+                                            {% if specialization_filter == spec %}selected{% endif %}>
+                                        {{ spec }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- City Filter -->
+                        <div class="mb-3">
+                            <label for="city" class="form-label">City/Location</label>
+                            <input type="text" class="form-control" id="city" name="city" 
+                                   value="{{ city_filter|default:'' }}" 
+                                   placeholder="Enter city">
+                        </div>
+                        
+                        <!-- Filter Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-1"></i> Apply Filters
+                            </button>
+                            <a href="{% url 'find_doctor' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i> Clear Filters
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">Quick Stats</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>{{ page_obj.paginator.count }}</strong> doctors found</p>
+                    <p class="mb-0"><strong>{{ specializations|length }}</strong> specialties available</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-9">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Find a Doctor</h2>
+                <div>
+                    <span class="badge bg-primary">{{ page_obj.paginator.count }} doctors</span>
+                </div>
+            </div>
+            
+            <!-- Active Filters -->
+            {% if specialization_filter or city_filter or search_query %}
+            <div class="alert alert-info d-flex align-items-center mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <div>
+                    <strong>Active Filters:</strong>
+                    {% if search_query %}Search: "{{ search_query }}"{% endif %}
+                    {% if specialization_filter %} | Specialty: {{ specialization_filter }}{% endif %}
+                    {% if city_filter %} | City: {{ city_filter }}{% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Doctors Grid -->
+            {% if page_obj.object_list %}
+            <div class="row">
+                {% for doctor in page_obj %}
+                <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                    <div class="card doctor-card h-100 shadow-sm">
+                        <div class="card-body">
+                            <!-- Doctor Image -->
+                            <div class="text-center mb-3">
+                                <img src="{% if doctor.user.profile_pic %}{{ doctor.user.profile_pic.url }}{% else %}{% static 'images/default-doctor.png' %}{% endif %}" 
+                                     alt="{{ doctor.user.get_full_name }}" 
+                                     class="rounded-circle doctor-img" 
+                                     style="width: 100px; height: 100px; object-fit: cover;">
+                            </div>
+                            
+                            <!-- Doctor Info -->
+                            <h5 class="card-title text-center mb-1">{{ doctor.user.get_full_name }}</h5>
+                            <p class="text-muted text-center mb-2">
+                                <i class="fas fa-stethoscope me-1"></i> {{ doctor.specialization }}
+                            </p>
+                            
+                            <!-- Qualifications -->
+                            {% if doctor.qualifications %}
+                            <p class="small text-muted mb-2">
+                                <i class="fas fa-graduation-cap me-1"></i> {{ doctor.qualifications|truncatewords:8 }}
+                            </p>
+                            {% endif %}
+                            
+                            <!-- Location -->
+                            {% if doctor.city %}
+                            <p class="small mb-2">
+                                <i class="fas fa-map-marker-alt me-1 text-primary"></i> {{ doctor.city }}
+                            </p>
+                            {% endif %}
+                            
+                            <!-- Experience -->
+                            {% if doctor.experience_years %}
+                            <p class="small mb-2">
+                                <i class="fas fa-briefcase me-1 text-info"></i> {{ doctor.experience_years }} years experience
+                            </p>
+                            {% endif %}
+                            
+                            <!-- Consultation Fee -->
+                            <p class="mb-3">
+                                <strong class="text-success">
+                                    <i class="fas fa-money-bill-wave me-1"></i> 
+                                    ₹{{ doctor.consultation_fee|default:"Not specified" }}
+                                </strong>
+                            </p>
+                            
+                            <!-- Action Buttons -->
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'doctor_detail' doctor.id %}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i> View Profile
+                                </a>
+                                <a href="{% url 'book_appointment' %}?doctor={{ doctor.id }}" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fas fa-calendar-check me-1"></i> Book Appointment
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Doctors pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if specialization_filter %}specialization={{ specialization_filter }}&{% endif %}{% if city_filter %}city={{ city_filter }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                            Previous
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in page_obj.paginator.page_range %}
+                        {% if page_obj.number == i %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ i }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if specialization_filter %}specialization={{ specialization_filter }}&{% endif %}{% if city_filter %}city={{ city_filter }}&{% endif %}page={{ i }}">{{ i }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if specialization_filter %}specialization={{ specialization_filter }}&{% endif %}{% if city_filter %}city={{ city_filter }}&{% endif %}page={{ page_obj.next_page_number }}">
+                            Next
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <!-- No Doctors Found -->
+            <div class="text-center py-5">
+                <i class="fas fa-user-md fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No doctors found</h4>
+                <p class="text-muted">
+                    {% if specialization_filter or city_filter or search_query %}
+                    Try adjusting your search filters or 
+                    <a href="{% url 'find_doctor' %}">clear all filters</a>
+                    {% else %}
+                    No doctors are currently available in the system.
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.doctor-card {
+    transition: transform 0.2s ease-in-out;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.doctor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-img {
+    border: 3px solid #f8f9fa;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+</style>
+{% endblock %}

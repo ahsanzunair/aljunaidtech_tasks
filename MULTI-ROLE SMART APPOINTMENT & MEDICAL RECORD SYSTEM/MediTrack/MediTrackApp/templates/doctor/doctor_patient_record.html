@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Patient Records | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Patient Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="h4 mb-1">Patient Medical Records</h2>
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb mb-0">
+                                    <li class="breadcrumb-item"><a href="{% url 'doctor_dashboard' %}">Dashboard</a></li>
+                                    <li class="breadcrumb-item"><a href="{% url 'doctor_patient_list' %}">Patients</a></li>
+                                    <li class="breadcrumb-item active" aria-current="page">Records</li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <a href="{% url 'doctor_patient_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Patients
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Info Card -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="position-relative d-inline-block">
+                        {% if patient.user.profile_pic %}
+                        <img src="{{ patient.user.profile_pic.url }}" alt="Profile" class="rounded-circle mb-3" width="120" height="120">
+                        {% else %}
+                        <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 120px; height: 120px;">
+                            <i class="fas fa-user fa-3x text-secondary"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <h4 class="mb-1">{{ patient.user.get_full_name }}</h4>
+                    <p class="text-muted mb-2">Patient ID: #{{ patient.id }}</p>
+                    <div class="d-flex justify-content-center flex-wrap gap-2 mb-3">
+                        <span class="badge bg-info">{{ patient.user.get_gender_display }}</span>
+                        <span class="badge bg-secondary">{{ patient.user.age }} years old</span>
+                    </div>
+                    
+                    <div class="text-start">
+                        <div class="d-flex mb-2">
+                            <div class="me-3 text-primary">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Email</small>
+                                <span>{{ patient.user.email }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex mb-2">
+                            <div class="me-3 text-primary">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Phone</small>
+                                <span>{{ patient.user.phone_number }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex">
+                            <div class="me-3 text-primary">
+                                <i class="fas fa-birthday-cake"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Date of Birth</small>
+                                <span>{{ patient.user.date_of_birth }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <!-- Records Summary -->
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card bg-primary text-white shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="text-white-50 small">Total Records</h6>
+                                    <h3 class="mb-0">{{ records.count }}</h3>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-file-medical fa-2x opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card bg-success text-white shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="text-white-50 small">Last Record</h6>
+                                    <h6 class="mb-0">
+                                        {% if records %}
+                                            {{ records.0.uploaded_at|date:"M d, Y" }}
+                                        {% else %}
+                                            No records
+                                        {% endif %}
+                                    </h6>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-calendar-check fa-2x opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Add New Record Button -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
+                    <h5>Add New Medical Record</h5>
+                    <p class="text-muted">Upload a new medical document or report for this patient</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRecordModal">
+                        <i class="fas fa-plus me-1"></i> Add Record
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Records List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Medical Records</h5>
+                    <div class="d-flex">
+                        <input type="text" class="form-control form-control-sm me-2" placeholder="Search records..." id="recordSearch">
+                        <button class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if records %}
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="recordsTable">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in records %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0">
+                                                <i class="fas fa-file-medical text-primary"></i>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="mb-0">{{ record.title }}</h6>
+                                                <small class="text-muted">By Dr. {{ record.doctor.user.get_full_name }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ record.get_record_type_display }}</span>
+                                    </td>
+                                    <td>{{ record.uploaded_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <p class="mb-0 text-truncate" style="max-width: 200px;">
+                                            {{ record.description|default:"No description" }}
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <a href="{{ record.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                            <a href="{{ record.file.url }}" download class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-download me-1"></i> Download
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRecordModal{{ record.id }}">
+                                                <i class="fas fa-trash me-1"></i> Delete
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Delete Confirmation Modal -->
+                                        <div class="modal fade" id="deleteRecordModal{{ record.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Confirm Delete</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Are you sure you want to delete the record "{{ record.title }}"? This action cannot be undone.</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <form method="post" action="{% url 'delete_medical_record' record.id %}">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="patient_id" value="{{ patient.id }}">
+                                                            <button type="submit" class="btn btn-danger">Delete Record</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-medical fa-4x text-muted mb-3"></i>
+                        <h5>No Medical Records Found</h5>
+                        <p class="text-muted">This patient doesn't have any medical records yet.</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRecordModal">
+                            <i class="fas fa-plus me-1"></i> Add First Record
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Record Modal -->
+<div class="modal fade" id="addRecordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Medical Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'add_medical_record' patient.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="recordTitle" class="form-label">Record Title *</label>
+                        <input type="text" class="form-control" id="recordTitle" name="title" required>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="recordType" class="form-label">Record Type *</label>
+                            <select class="form-select" id="recordType" name="record_type" required>
+                                <option value="" selected disabled>Select record type</option>
+                                <option value="prescription">Prescription</option>
+                                <option value="lab_report">Lab Report</option>
+                                <option value="imaging">Imaging Results</option>
+                                <option value="progress_note">Progress Note</option>
+                                <option value="consultation">Consultation Note</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="recordDate" class="form-label">Record Date *</label>
+                            <input type="date" class="form-control" id="recordDate" name="record_date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="recordDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="recordDescription" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="recordFile" class="form-label">Upload File *</label>
+                        <input type="file" class="form-control" id="recordFile" name="file" required>
+                        <div class="form-text">Supported formats: PDF, JPG, PNG, DOCX (Max 10MB)</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 0.75rem;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.action-btn {
+    min-width: 100px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const recordSearch = document.getElementById('recordSearch');
+    if (recordSearch) {
+        recordSearch.addEventListener('keyup', function() {
+            const searchText = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#recordsTable tbody tr');
+            
+            rows.forEach(row => {
+                const title = row.querySelector('h6').textContent.toLowerCase();
+                const description = row.querySelector('p').textContent.toLowerCase();
+                const type = row.querySelector('.badge').textContent.toLowerCase();
+                
+                if (title.includes(searchText) || description.includes(searchText) || type.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+    
+    // Set today's date as default for record date
+    const recordDate = document.getElementById('recordDate');
+    if (recordDate) {
+        const today = new Date().toISOString().split('T')[0];
+        recordDate.value = today;
+    }
+});
+</script>
+{% endblock %}

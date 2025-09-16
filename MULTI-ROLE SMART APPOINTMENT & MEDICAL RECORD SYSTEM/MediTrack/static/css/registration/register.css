@@ -1,0 +1,182 @@
+:root {
+        --primary: #0D6BF6;
+        --secondary: #6c757d;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --success: #198754;
+        --danger: #dc3545;
+        --warning: #ffc107;
+        --info: #0dcaf0;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f5f7ff 0%, #e3e6ff 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .register-container {
+        max-width: 800px;
+        width: 100%;
+        margin: 0 auto;
+    }
+    
+    .register-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    
+    .register-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .card-header {
+        background: var(--primary);
+        color: white;
+        text-align: center;
+        padding: 1.5rem;
+        border-bottom: none;
+    }
+    
+    .card-header h3 {
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    .card-body {
+        padding: 2rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+    }
+    
+    .form-control {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(74, 108, 247, 0.25);
+    }
+    
+    .input-group-text {
+        background-color: white;
+        border-radius: 8px 0 0 8px;
+    }
+    
+    .password-toggle {
+        cursor: pointer;
+        background-color: white;
+        border-left: none;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .btn-primary {
+        background: var(--primary);
+        border: none;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary:hover {
+        background: var(--primary);
+        transform: translateY(-2px);
+    }
+    
+    .progress-bar {
+        background-color: var(--primary);
+    }
+    
+    .password-strength {
+        height: 5px;
+        margin-top: 5px;
+        border-radius: 5px;
+    }
+    
+    .password-feedback {
+        font-size: 0.875rem;
+        margin-top: 5px;
+    }
+    
+    .role-selection {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    
+    .role-option {
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
+        padding: 15px 10px;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .role-option:hover {
+        border-color: var(--primary);
+        transform: translateY(-3px);
+    }
+    
+    .role-option.selected {
+        border-color: var(--primary);
+        background-color: rgba(74, 108, 247, 0.1);
+    }
+    
+    .role-option i {
+        font-size: 24px;
+        margin-bottom: 10px;
+        color: var(--primary);
+    }
+    
+    .form-section {
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .form-section-title {
+        font-size: 1.2rem;
+        color: var(--primary);
+        margin-bottom: 15px;
+        padding-bottom: 5px;
+        border-bottom: 2px solid var(--primary);
+        display: inline-block;
+    }
+    
+    .terms-text {
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    
+    .alert {
+        border-radius: 8px;
+        padding: 0.75rem 1.25rem;
+    }
+    
+    .password-field {
+        position: relative;
+    }
+    
+    @media (max-width: 768px) {
+        .role-selection {
+            flex-direction: column;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+    }

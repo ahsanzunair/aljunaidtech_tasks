@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">My Patients</h4>
+                </div>
+                <div class="card-body">
+                    {% if patients %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Patient Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Last Appointment</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for patient in patients %}
+                                <tr>
+                                    <td>{{ patient.user.get_full_name }}</td>
+                                    <td>{{ patient.user.email }}</td>
+                                    <td>{{ patient.user.phone_number }}</td>
+                                    <td>
+                                        {% with patient.appointment_set.all|first as last_appt %}
+                                            {{ last_appt.date|default:"No appointments" }}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'doctor_patient_record' patient.id %}" 
+                                           class="btn btn-primary btn-sm">
+                                            View Records
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        You haven't treated any patients yet.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

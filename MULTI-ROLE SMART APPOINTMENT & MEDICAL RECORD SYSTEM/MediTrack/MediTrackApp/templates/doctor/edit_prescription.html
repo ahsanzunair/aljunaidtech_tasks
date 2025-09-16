@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edit Prescription - MediTrack{% endblock %}
+<link rel="stylesheet" href="{% static "css/doctor/edit_prescription.css" %}">
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6>Edit Prescription</h6>
+                        <div>
+                            <a href="{% url 'prescription_list' %}" class="btn btn-sm btn-outline-secondary me-2">
+                                <i class="fas fa-arrow-left me-1"></i> Back to List
+                            </a>
+                            <a href="{% url 'doctor_dashboard' %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-home me-1"></i> Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Display form errors at the top -->
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Please correct the following errors:
+                        </h6>
+                        <ul class="mb-0">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                <div class="card-body">
+                    <!-- Prescription Info Header -->
+                    <div class="alert alert-info">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle fa-2x me-3"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1">Editing Prescription</h6>
+                                <p class="mb-0">Make only the changes you need. Fields can be left as they are.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Appointment Details</h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p class="mb-1"><strong>Patient:</strong> {{ appointment.patient.user.get_full_name }}</p>
+                                    <p class="mb-1"><strong>Date:</strong> {{ appointment.date|date:"M d, Y" }}</p>
+                                    <p class="mb-1"><strong>Time:</strong> {{ appointment.time|time:"g:i A" }}</p>
+                                    <p class="mb-1"><strong>Reason:</strong> {{ appointment.get_reason_display }}</p>
+                                    {% if appointment.symptoms %}
+                                    <p class="mb-0"><strong>Symptoms:</strong> {{ appointment.symptoms }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Prescription Information</h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p class="mb-1"><strong>Prescription ID:</strong> {{ prescription.id }}</p>
+                                    <p class="mb-1"><strong>Created:</strong> {{ prescription.created_at|date:"M d, Y" }}</p>
+                                    <p class="mb-1"><strong>Last Updated:</strong> {{ prescription.updated_at|date:"M d, Y" }}</p>
+                                    <p class="mb-0"><strong>Status:</strong> <span class="badge bg-success">Active</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" id="prescriptionForm">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Diagnosis Section -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="{{ form.diagnosis.id_for_label }}" class="form-label">
+                                        Diagnosis
+                                        <i class="fas fa-question-circle text-info" data-bs-toggle="tooltip" 
+                                           title="Update the diagnosis if needed"></i>
+                                    </label>
+                                    {{ form.diagnosis }}
+                                    {% if form.diagnosis.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>
+                                        {% for error in form.diagnosis.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Medications Section -->
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Medications</h6>
+                                    <button type="button" id="addMedication" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-plus me-1"></i> Add Medication
+                                    </button>
+                                </div>
+                                
+                                <div id="medicationItems">
+                                    {% if prescription.medications %}
+                                        {% for med in prescription.medications %}
+                                        <div class="medication-item card mb-3">
+                                            <div class="card-header py-2 bg-light d-flex justify-content-between align-items-center">
+                                                <span class="small">Medication #{{ forloop.counter }}</span>
+                                                <button type="button" class="btn btn-sm btn-danger remove-medication">
+                                                    <i class="fas fa-trash"></i> Remove
+                                                </button>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <label class="form-label">Medication Name</label>
+                                                            <input type="text" class="form-control" name="medication_name" 
+                                                                   value="{{ med.name }}" placeholder="e.g., Amoxicillin">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <div class="form-group">
+                                                            <label class="form-label">Dosage</label>
+                                                            <input type="text" class="form-control" name="medication_dosage" 
+                                                                   value="{{ med.dosage }}" placeholder="e.g., 500mg">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <div class="form-group">
+                                                            <label class="form-label">Frequency</label>
+                                                            <input type="text" class="form-control" name="medication_frequency" 
+                                                                   value="{{ med.frequency }}" placeholder="e.g., 3 times daily">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="form-group">
+                                                            <label class="form-label">Duration</label>
+                                                            <input type="text" class="form-control" name="medication_duration" 
+                                                                   value="{{ med.duration }}" placeholder="e.g., 7 days">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-1 d-flex align-items-end">
+                                                        <button type="button" class="btn btn-link text-danger remove-medication-sm">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Instructions Section -->
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="{{ form.instructions.id_for_label }}" class="form-label">
+                                        Additional Instructions
+                                        <i class="fas fa-question-circle text-info" data-bs-toggle="tooltip" 
+                                           title="Update instructions if needed"></i>
+                                    </label>
+                                    {{ form.instructions }}
+                                    {% if form.instructions.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>
+                                        {% for error in form.instructions.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Follow-up Section -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.follow_up_date.id_for_label }}" class="form-label">
+                                        Follow-up Date
+                                        <i class="fas fa-question-circle text-info" data-bs-toggle="tooltip" 
+                                           title="Update follow-up date if needed"></i>
+                                    </label>
+                                    {{ form.follow_up_date }}
+                                    {% if form.follow_up_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>
+                                        {% for error in form.follow_up_date.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.follow_up_notes.id_for_label }}" class="form-label">
+                                        Follow-up Notes
+                                        <i class="fas fa-question-circle text-info" data-bs-toggle="tooltip" 
+                                           title="Update follow-up notes if needed"></i>
+                                    </label>
+                                    {{ form.follow_up_notes }}
+                                    {% if form.follow_up_notes.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>
+                                        {% for error in form.follow_up_notes.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save me-1"></i> Update Prescription
+                                    </button>
+                                    <a href="{% url 'prescription_list' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i> Cancel
+                                    </a>
+                                    <a href="{% url 'download_prescription' prescription.id %}" class="btn btn-outline-info">
+                                        <i class="fas fa-download me-1"></i> Download
+                                    </a>
+                                    <a href="{% url 'share_prescription' prescription.id %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-share-alt me-1"></i> Share
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Medication Item Template (Hidden) -->
+<div id="medicationTemplate" class="d-none">
+    <div class="medication-item card mb-3">
+        <div class="card-header py-2 bg-light d-flex justify-content-between align-items-center">
+            <span class="small">New Medication</span>
+            <button type="button" class="btn btn-sm btn-danger remove-medication">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">Medication Name</label>
+                        <input type="text" class="form-control" name="medication_name" 
+                               placeholder="e.g., Amoxicillin">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="form-label">Dosage</label>
+                        <input type="text" class="form-control" name="medication_dosage" 
+                               placeholder="e.g., 500mg">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="form-label">Frequency</label>
+                        <input type="text" class="form-control" name="medication_frequency" 
+                               placeholder="e.g., 3 times daily">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Duration</label>
+                        <input type="text" class="form-control" name="medication_duration" 
+                               placeholder="e.g., 7 days">
+                    </div>
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-link text-danger remove-medication-sm">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Add medication functionality
+    const addButton = document.getElementById('addMedication');
+    if (addButton) {
+        const medicationContainer = document.getElementById('medicationItems');
+        const template = document.getElementById('medicationTemplate');
+        
+        addButton.addEventListener('click', function() {
+            const newItem = template.cloneNode(true);
+            newItem.classList.remove('d-none');
+            
+            // Update medication number
+            const count = medicationContainer.querySelectorAll('.medication-item').length + 1;
+            newItem.querySelector('.small').textContent = `Medication #${count}`;
+            
+            medicationContainer.appendChild(newItem);
+            initRemoveButtons();
+        });
+        
+        // Remove medication functionality
+        function initRemoveButtons() {
+            document.querySelectorAll('.remove-medication, .remove-medication-sm').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.closest('.medication-item').remove();
+                    // Renumber remaining medications
+                    document.querySelectorAll('.medication-item').forEach((item, index) => {
+                        item.querySelector('.small').textContent = `Medication #${index + 1}`;
+                    });
+                });
+            });
+        }
+        
+        initRemoveButtons();
+    }
+});
+</script>
+{% endblock %}

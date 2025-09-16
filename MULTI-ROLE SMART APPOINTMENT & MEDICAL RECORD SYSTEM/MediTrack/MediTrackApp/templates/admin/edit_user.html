@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edit User - Smart Appointment & Medical Record System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/edit_user.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">Edit User</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'user_management' %}">Users</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'view_user' user.id %}">{{ user.get_full_name }}</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Edit</li>
+                        </ol>
+                    </nav>
+                </div>
+                <a href="{% url 'view_user' user.id %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+        {% csrf_token %}
+        
+        <!-- Profile Section -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header py-3 bg-primary text-white">
+                <h5 class="m-0 fw-bold"><i class="bi bi-person-badge me-2"></i>Profile Information</h5>
+            </div>
+            <div class="card-body">
+                <!-- Profile Picture Upload -->
+                <div class="text-center mb-4">
+                    <div class="position-relative d-inline-block">
+                        <div class="profile-pic-container shadow">
+                            {% if user.profile_pic %}
+                                <img id="profilePicPreview" src="{{ user.profile_pic.url }}" 
+                                     class="profile-pic-preview" alt="Profile Picture">
+                            {% else %}
+                                <div id="profilePicPreview" class="profile-pic-preview bg-gradient-primary text-white 
+                                    d-flex align-items-center justify-content-center fs-1">
+                                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                                </div>
+                            {% endif %}
+                            <label for="profile_pic" class="btn btn-sm btn-dark position-absolute bottom-0 end-0 rounded-circle p-0"
+                                   style="width: 30px; height: 30px;" data-bs-toggle="tooltip" title="Change photo">
+                                <i class="bi bi-camera fs-6"></i>
+                                <input type="file" name="profile_pic" id="profile_pic" class="d-none" accept="image/*">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">Click camera icon to change profile picture</small>
+                    </div>
+                </div>
+
+                <!-- Name Fields -->
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="first_name" class="form-label">First Name *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                   value="{{ user.first_name }}" required maxlength="30">
+                            <div class="invalid-feedback">
+                                Please provide a valid first name.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="last_name" class="form-label">Last Name *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                   value="{{ user.last_name }}" required maxlength="30">
+                            <div class="invalid-feedback">
+                                Please provide a valid last name.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information Card -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header py-3 bg-primary text-white">
+                <h5 class="m-0 fw-bold"><i class="bi bi-envelope me-2"></i>Contact Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">Email Address *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope-at"></i></span>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ user.email }}" required>
+                            <div class="invalid-feedback">
+                                Please provide a valid email address.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="phone_number" class="form-label">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                   value="{{ user.phone_number|default:'' }}" pattern="[0-9+\-\s()]{10,15}">
+                            <div class="invalid-feedback">
+                                Please provide a valid phone number.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="gender" class="form-label">Gender</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
+                            <select class="form-select" id="gender" name="gender">
+                                <option value="">Select Gender</option>
+                                <option value="M" {% if user.gender == 'M' %}selected{% endif %}>Male</option>
+                                <option value="F" {% if user.gender == 'F' %}selected{% endif %}>Female</option>
+                                <option value="O" {% if user.gender == 'O' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="date_of_birth" class="form-label">Date of Birth</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" 
+                                   value="{{ user.date_of_birth|date:'Y-m-d'|default:'' }}" max="{{ today|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Settings Card -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header py-3 bg-primary text-white">
+                <h5 class="m-0 fw-bold"><i class="bi bi-gear me-2"></i>Account Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="username" class="form-label">Username *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">@</span>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   value="{{ user.username }}" required pattern="[a-zA-Z0-9_@.+-]+" minlength="3" maxlength="150">
+                            <div class="invalid-feedback">
+                                Please provide a valid username (letters, digits, and @/./+/-/_ only).
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="role" class="form-label">User Role *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-rolodex"></i></span>
+                            <select class="form-select" id="role" name="role" required>
+                                {% for value, label in roles %}
+                                    <option value="{{ value }}" {% if user.role == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Account Status</label>
+                        <div class="form-check form-switch form-switch-lg">
+                            <input class="form-check-input" type="checkbox" role="switch" id="is_active" name="is_active" 
+                                   {% if user.is_active %}checked{% endif %}>
+                            <label class="form-check-label ms-2" for="is_active">
+                                {% if user.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Password Field -->
+                    {% if request.user.is_superuser or request.user.role == 'admin' %}
+                    <div class="col-md-6">
+                        <label for="password" class="form-label">Change Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="Leave blank to keep current password" minlength="8">
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">Minimum 8 characters with mix of letters and numbers</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctor Information Card (Conditional) -->
+        <div id="doctorFields" class="card mb-4 shadow-sm {% if user.role != 'doctor' %}d-none{% endif %}">
+            <div class="card-header py-3 bg-success text-white">
+                <h5 class="m-0 fw-bold"><i class="bi bi-heart-pulse me-2"></i>Professional Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="specialization" class="form-label">Specialization *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-bandaid"></i></span>
+                            <input type="text" class="form-control" id="specialization" name="specialization" 
+                                   value="{{ user.doctor_profile.specialization|default:'' }}" 
+                                   {% if user.role == 'doctor' %}required{% endif %}>
+                            <div class="invalid-feedback">
+                                Please provide a specialization.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="license_number" class="form-label">License Number *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-file-earmark-medical"></i></span>
+                            <input type="text" class="form-control" id="license_number" name="license_number" 
+                                   value="{{ user.doctor_profile.license_number|default:'' }}" 
+                                   {% if user.role == 'doctor' %}required{% endif %}>
+                            <div class="invalid-feedback">
+                                Please provide a license number.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <label for="qualifications" class="form-label">Qualifications</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-award"></i></span>
+                            <textarea class="form-control" id="qualifications" name="qualifications" 
+                                      rows="3" placeholder="Medical degrees and certifications">{{ user.doctor_profile.qualifications|default:'' }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="consultation_fee" class="form-label">Consultation Fee (PKR)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-currency-rupee"></i></span>
+                            <input type="number" class="form-control" id="consultation_fee" name="consultation_fee" 
+                                   value="{{ user.doctor_profile.consultation_fee|default:'' }}" step="0.01" min="0">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="experience_years" class="form-label">Experience (Years)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
+                            <input type="number" class="form-control" id="experience_years" name="experience_years" 
+                                   value="{{ user.doctor_profile.experience_years|default:'' }}" min="0" max="50">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+            <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>Fields marked with * are required
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'view_user' user.id %}" class="btn btn-outline-danger">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Enable tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Toggle password visibility
+    $('#togglePassword').click(function() {
+        const passwordInput = $('#password');
+        const icon = $(this).find('i');
+        if (passwordInput.attr('type') === 'password') {
+            passwordInput.attr('type', 'text');
+            icon.removeClass('bi-eye').addClass('bi-eye-slash');
+        } else {
+            passwordInput.attr('type', 'password');
+            icon.removeClass('bi-eye-slash').addClass('bi-eye');
+        }
+    });
+
+    // Dynamic doctor fields
+    $('#role').change(function() {
+        const doctorFields = $('#doctorFields');
+        if ($(this).val() === 'doctor') {
+            doctorFields.removeClass('d-none');
+            // Make doctor-specific fields required
+            $('#specialization, #license_number').prop('required', true);
+        } else {
+            doctorFields.addClass('d-none');
+            // Remove required from doctor-specific fields
+            $('#specialization, #license_number').prop('required', false);
+        }
+    });
+
+    // Profile picture preview
+    $('#profile_pic').change(function(e) {
+        const preview = $('#profilePicPreview');
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                if (preview.is('img')) {
+                    preview.attr('src', event.target.result);
+                } else {
+                    const img = $('<img>').attr({
+                        id: 'profilePicPreview',
+                        class: 'profile-pic-preview',
+                        src: event.target.result
+                    });
+                    preview.replaceWith(img);
+                }
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+
+    // Form validation
+    (function() {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // Scroll to first error
+                    const firstInvalid = form.querySelector('.is-invalid');
+                    if (firstInvalid) {
+                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+
+    // Real-time validation
+    $('input, select, textarea').on('input change', function() {
+        $(this).removeClass('is-invalid');
+    });
+
+    // Character counter for text inputs
+    $('input[maxlength], textarea[maxlength]').on('input', function() {
+        const maxLength = $(this).attr('maxlength');
+        const currentLength = $(this).val().length;
+        $(this).next('.form-text').text(`${currentLength}/${maxLength} characters`);
+    });
+});
+</script>
+{% endblock %}

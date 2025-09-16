@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Activity Logs | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/activity_logs.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Activity Logs</h1>
+        <div class="btn-group">
+            <a href="{% url 'export_activity_logs' %}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-download"></i> Export
+            </a>
+            <a href="{% url 'clear_activity_logs' %}" class="btn btn-outline-warning">
+                <i class="bi bi-trash"></i> Clear Old Logs
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Logs</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_logs }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-activity fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Today's Logs</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ today_logs }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-calendar-day fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Unique Users</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ unique_users }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Avg. Daily</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ avg_daily_logs  }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-graph-up fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filter Logs</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    {{ filter_form.action.label_tag }}
+                    {{ filter_form.action }}
+                </div>
+                <div class="col-md-3">
+                    {{ filter_form.user.label_tag }}
+                    {{ filter_form.user }}
+                </div>
+                <div class="col-md-3">
+                    {{ filter_form.date_from.label_tag }}
+                    {{ filter_form.date_from }}
+                </div>
+                <div class="col-md-3">
+                    {{ filter_form.date_to.label_tag }}
+                    {{ filter_form.date_to }}
+                </div>
+                <div class="col-md-6">
+                    {{ filter_form.search.label_tag }}
+                    {{ filter_form.search }}
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-funnel"></i> Apply Filters
+                    </button>
+                    <a href="{% url 'activity_logs' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Activity Logs List -->
+    <div class="card shadow">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Activity Logs</h6>
+            <span class="badge bg-primary">
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="activityLogsTable">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>User</th>
+                            <th>Details</th>
+                            <th>IP Address</th>
+                            <th>Timestamp</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in page_obj %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-{{ log.action_color }} me-2">
+                                        <i class="bi {{ log.action_icon }}"></i>
+                                    </span>
+                                    {{ log.get_action_display }}
+                                </div>
+                                {% if log.model_name %}
+                                <div class="small text-muted">{{ log.model_name }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.user %}
+                                <div class="d-flex align-items-center">
+                                    {% if log.user.profile_pic %}
+                                    <img src="{{ log.user.profile_pic.url }}" alt="Profile" class="rounded-circle me-2" width="32" height="32">
+                                    {% else %}
+                                    <div class="avatar-placeholder rounded-circle me-2 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 32px; height: 32px;">
+                                        {{ log.user.first_name|first|upper }}{{ log.user.last_name|first|upper }}
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <strong>{{ log.user.get_full_name }}</strong>
+                                        <div class="small text-muted">@{{ log.user.username }}</div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <span class="text-muted">System</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="log-details">
+                                    {% for key, value in log.details.items %}
+                                    <div class="small">
+                                        <strong>{{ key|title }}:</strong> 
+                                        {% if value|length > 50 %}
+                                            {{ value|slice:":50" }}...
+                                        {% else %}
+                                            {{ value }}
+                                        {% endif %}
+                                    </div>
+                                    {% empty %}
+                                    <span class="text-muted small">No details</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>
+                                {% if log.ip_address %}
+                                <span class="badge bg-secondary">{{ log.ip_address }}</span>
+                                {% else %}
+                                <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="text-muted small" title="{{ log.created_at|date:'Y-m-d H:i:s' }}">
+                                    {{ log.created_at|timesince }} ago
+                                </span>
+                                <div class="small">{{ log.created_at|date:"M d, Y H:i" }}</div>
+                            </td>
+                            <td>
+                                <a href="{% url 'activity_log_details' log.id %}" class="btn btn-sm btn-outline-primary"
+                                   title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="bi bi-activity display-6"></i>
+                                    <h5>No activity logs found</h5>
+                                    {% if request.GET.action or request.GET.user or request.GET.search %}
+                                    <p>Try changing your search filters</p>
+                                    <a href="{% url 'activity_logs' %}" class="btn btn-primary mt-2">
+                                        Reset Filters
+                                    </a>
+                                    {% else %}
+                                    <p>No activity has been logged yet</p>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-hidden="true">&laquo;</span>
+                    </li>
+                    {% endif %}
+
+                    {% for i in page_obj.paginator.page_range %}
+                        {% if page_obj.number == i %}
+                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-hidden="true">&raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Auto-submit filters when changed
+    $('#id_action, #id_user').change(function() {
+        $(this).closest('form').submit();
+    });
+    
+    // Initialize tooltips
+    $('[title]').tooltip();
+});
+</script>
+{% endblock %}

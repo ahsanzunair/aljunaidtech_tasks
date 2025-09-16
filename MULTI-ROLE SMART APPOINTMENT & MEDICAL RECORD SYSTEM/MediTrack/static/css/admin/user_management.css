@@ -1,0 +1,92 @@
+/* User Management Specific Styles */
+.avatar-placeholder {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-1px);
+}
+
+.border-start-primary {
+    border-left: 0.25rem solid #4e73df !important;
+}
+
+.border-start-success {
+    border-left: 0.25rem solid #1cc88a !important;
+}
+
+.border-start-info {
+    border-left: 0.25rem solid #36b9cc !important;
+}
+
+.border-start-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: #6e707e;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(78, 115, 223, 0.05);
+}
+
+/* Pagination styles */
+.pagination .page-link {
+    border-radius: 0.35rem;
+    margin: 0 0.2rem;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body .row.g-3 {
+        margin-bottom: -1rem;
+    }
+    
+    .card-body .row.g-3 > [class*="col-"] {
+        margin-bottom: 1rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .d-flex.gap-1 {
+        flex-wrap: wrap;
+    }
+    
+    .d-flex.gap-1 .btn {
+        margin-bottom: 0.25rem;
+    }
+}
+
+/* Empty state styling */
+.text-muted .display-6 {
+    font-size: 3.5rem;
+    opacity: 0.5;
+}
+
+/* Hover effects for action buttons */
+.btn-sm {
+    transition: all 0.15s ease;
+}
+
+.btn-sm:hover {
+    transform: translateY(-1px);
+}

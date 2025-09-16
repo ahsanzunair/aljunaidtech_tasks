@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if user.is_active %}
+<form method="post" action="{% url 'toggle_user_status' user.id %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-sm btn-danger">
+        <i class="bi bi-lock"></i> Block
+    </button>
+</form>
+{% else %}
+<form method="post" action="{% url 'toggle_user_status' user.id %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-sm btn-success">
+        <i class="bi bi-unlock"></i> Activate
+    </button>
+</form>
+
+{% endif %}
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+// You can add dashboard-specific JavaScript here if needed
+$(document).ready(function() {
+    // Example: Make cards clickable
+    $('.dashboard-card').click(function() {
+        window.location = $(this).find('a').attr('href');
+    }).css('cursor', 'pointer');
+});
+</script>
+
+{% endblock %}

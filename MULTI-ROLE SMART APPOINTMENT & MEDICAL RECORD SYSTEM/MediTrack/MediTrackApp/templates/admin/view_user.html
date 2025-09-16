@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}User Details - Smart Appointment & Medical Record System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/user_details.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="h2 mb-1">User Details</h1>
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'user_management' %}">Users</a></li>
+              <li class="breadcrumb-item active" aria-current="page">{{ user_profile.get_full_name }}</li>
+            </ol>
+          </nav>
+        </div>
+        <a href="{% url 'user_management' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left me-1"></i> Back to Users
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Profile Column -->
+    <div class="col-xl-4 col-lg-5">
+      <!-- Profile Card -->
+      <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-primary text-white">
+          <h5 class="m-0 fw-bold"><i class="bi bi-person-badge me-2"></i>Profile Information</h5>
+        </div>
+        <div class="card-body text-center">
+          <!-- Profile Image -->
+          {% if user_profile.profile_pic %}
+          <img src="{{ user_profile.profile_pic.url }}" class="rounded-circle mb-3 border" 
+               alt="{{ user_profile.get_full_name }}" width="150" height="150" style="object-fit: cover;">
+          {% else %}
+          <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-3" 
+               style="width: 150px; height: 150px; font-size: 3rem;">
+            {{ user_profile.first_name|first|upper }}{{ user_profile.last_name|first|upper }}
+          </div>
+          {% endif %}
+          
+          <!-- User Name and Role -->
+          <h3 class="mb-1">{{ user_profile.get_full_name }}</h3>
+          <p class="text-muted text-uppercase mb-3">{{ user_profile.get_role_display }}</p>
+
+          <!-- Status Badges -->
+          <div class="d-flex justify-content-center gap-2 mb-3">
+            <span class="badge {% if user_profile.is_active %}bg-success{% else %}bg-danger{% endif %}">
+              <i class="bi {% if user_profile.is_active %}bi-check-circle{% else %}bi-x-circle{% endif %} me-1"></i>
+              {% if user_profile.is_active %}Active{% else %}Blocked{% endif %}
+            </span>
+            <span class="badge {% if user_profile.is_online %}bg-success{% else %}bg-secondary{% endif %}">
+              <i class="bi {% if user_profile.is_online %}bi-circle-fill{% else %}bi-circle{% endif %} me-1"></i>
+              {% if user_profile.is_online %}Online{% else %}Offline{% endif %}
+            </span>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex justify-content-center gap-2 mt-4">
+            <a href="{% url 'edit_user' user_profile.id %}" class="btn btn-primary btn-sm">
+              <i class="bi bi-pencil me-1"></i> Edit Profile
+            </a>
+            
+            {% if user_profile.is_active %}
+            <form method="post" action="{% url 'toggle_user_status' user_profile.id %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" onclick="return confirm('Are you sure you want to block {{ user_profile.get_full_name }}?');" 
+                      class="btn btn-danger btn-sm">
+                <i class="bi bi-lock me-1"></i> Block User
+              </button>
+            </form>
+            {% else %}
+            <form method="post" action="{% url 'toggle_user_status' user_profile.id %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" onclick="return confirm('Are you sure you want to activate {{ user_profile.get_full_name }}?');" 
+                      class="btn btn-success btn-sm">
+                <i class="bi bi-unlock me-1"></i> Activate User
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats Card -->
+      <div class="card shadow">
+        <div class="card-header py-3 bg-info text-white">
+          <h5 class="m-0 fw-bold"><i class="bi bi-bar-chart me-2"></i>Quick Stats</h5>
+        </div>
+        <div class="card-body">
+          <div class="list-group list-group-flush">
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-calendar-check text-primary me-2"></i>Total Appointments</span>
+              <span class="badge bg-primary rounded-pill">{{ appointment_count }}</span>
+            </div>
+            {% if user_profile.role == "doctor" %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-file-medical text-success me-2"></i>Prescriptions</span>
+              <span class="badge bg-success rounded-pill">{{ prescription_count|default:"0" }}</span>
+            </div>
+            {% endif %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-clock-history text-warning me-2"></i>Last Login</span>
+              <span class="text-muted">
+                {% if user_profile.last_login %}
+                {{ user_profile.last_login|timesince }} ago
+                {% else %}
+                Never logged in
+                {% endif %}
+              </span>
+            </div>
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-calendar-plus text-secondary me-2"></i>Member Since</span>
+              <span class="text-muted">{{ user_profile.date_joined|date:"M d, Y" }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details Column -->
+    <div class="col-xl-8 col-lg-7">
+      <!-- Basic Information Card -->
+      <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-primary text-white">
+          <h5 class="m-0 fw-bold"><i class="bi bi-info-circle me-2"></i>Basic Information</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <dl class="row mb-0">
+                <dt class="col-sm-4 mb-2">Email:</dt>
+                <dd class="col-sm-8 mb-2">
+                  {% if user_profile.email %}
+                  <a href="mailto:{{ user_profile.email }}" class="text-decoration-none">{{ user_profile.email }}</a>
+                  {% else %}
+                  <span class="text-muted">Not provided</span>
+                  {% endif %}
+                </dd>
+
+                <dt class="col-sm-4 mb-2">Phone:</dt>
+                <dd class="col-sm-8 mb-2">
+                  {% if user_profile.phone_number %}
+                  <a href="tel:{{ user_profile.phone_number }}" class="text-decoration-none">{{ user_profile.phone_number }}</a>
+                  {% else %}
+                  <span class="text-muted">Not provided</span>
+                  {% endif %}
+                </dd>
+
+                <dt class="col-sm-4 mb-2">Gender:</dt>
+                <dd class="col-sm-8 mb-2">
+                  {{ user_profile.get_gender_display|default:"Not specified" }}
+                </dd>
+              </dl>
+            </div>
+            <div class="col-md-6">
+              <dl class="row mb-0">
+                <dt class="col-sm-4 mb-2">Username:</dt>
+                <dd class="col-sm-8 mb-2">
+                  <code>@{{ user_profile.username }}</code>
+                </dd>
+
+                <dt class="col-sm-4 mb-2">Date of Birth:</dt>
+                <dd class="col-sm-8 mb-2">
+                  {{ user_profile.date_of_birth|date:"M d, Y"|default:"Not specified" }}
+                </dd>
+
+                <dt class="col-sm-4 mb-2">Status:</dt>
+                <dd class="col-sm-8 mb-2">
+                  <span class="badge {% if user_profile.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                    {% if user_profile.is_active %}Active{% else %}Blocked{% endif %}
+                  </span>
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Role-Specific Information -->
+      {% if user_profile.role == "doctor" %}
+      <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-success text-white">
+          <h5 class="m-0 fw-bold"><i class="bi bi-heart-pulse me-2"></i>Professional Information</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <dl class="row mb-0">
+                <dt class="col-sm-5 mb-2">Specialization:</dt>
+                <dd class="col-sm-7 mb-2">
+                  {{ user_profile.doctor_profile.specialization|default:"Not specified" }}
+                </dd>
+
+                <dt class="col-sm-5 mb-2">License Number:</dt>
+                <dd class="col-sm-7 mb-2">
+                  {{ user_profile.doctor_profile.license_number|default:"Not specified" }}
+                </dd>
+
+                <dt class="col-sm-5 mb-2">Qualifications:</dt>
+                <dd class="col-sm-7 mb-2">
+                  {{ user_profile.qualifications|default:"Not specified" }}
+                </dd>
+              </dl>
+            </div>
+            <div class="col-md-6">
+              <dl class="row mb-0">
+                <dt class="col-sm-6 mb-2">Consultation Fee:</dt>
+                <dd class="col-sm-6 mb-2">
+                  {% if user_profile.doctor_profile.consultation_fee %}
+                  {{ user_profile.doctor_profile.consultation_fee }} PKR
+                  {% else %}
+                  <span class="text-muted">Not specified</span>
+                  {% endif %}
+                </dd>
+
+                <dt class="col-sm-6 mb-2">Experience:</dt>
+                <dd class="col-sm-6 mb-2">
+                  {% if user_profile.experience_years %}
+                  {{ user_profile.experience_years }} years
+                  {% else %}
+                  <span class="text-muted">Not specified</span>
+                  {% endif %}
+                </dd>
+
+                <dt class="col-sm-6 mb-2">Total Patients:</dt>
+                <dd class="col-sm-6 mb-2">
+                  {{ patient_count|default:"0" }}
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Recent Activity Card -->
+      <div class="card shadow">
+        <div class="card-header py-3 bg-info text-white">
+          <h5 class="m-0 fw-bold"><i class="bi bi-clock-history me-2"></i>Recent Activity</h5>
+        </div>
+        <div class="card-body">
+          {% if recent_activity %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Action</th>
+                  <th>Details</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for log in recent_activity %}
+                <tr>
+                  <td>
+                    <span class="badge 
+                      {% if log.action == 'login' %}bg-success
+                      {% elif log.action == 'logout' %}bg-secondary
+                      {% elif log.action == 'create' %}bg-primary
+                      {% elif log.action == 'update' %}bg-info
+                      {% elif log.action == 'delete' %}bg-danger
+                      {% else %}bg-warning{% endif %}">
+                      {{ log.get_action_display }}
+                    </span>
+                  </td>
+                  <td>{{ log.details|truncatewords:5|default:"No details" }}</td>
+                  <td>
+                    <small class="text-muted">{{ log.created_at|date:"M d, Y H:i" }}</small>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="text-center mt-3">
+            <a href="{% url 'activity_logs' %}?user={{ user_profile.id }}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-list-ul me-1"></i>View Full Activity
+            </a>
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-inbox display-6 d-block mb-2"></i>
+            <p>No recent activity found</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+  // Enable tooltips
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+  });
+
+  // Confirmation for status toggle
+  $('form[action*="toggle_user_status"]').on('submit', function(e) {
+    const action = $(this).find('button').hasClass('btn-danger') ? 'block' : 'activate';
+    const userName = '{{ user_profile.get_full_name }}';
+    return confirm(`Are you sure you want to ${action} user ${userName}?`);
+  });
+});
+</script>
+{% endblock %}

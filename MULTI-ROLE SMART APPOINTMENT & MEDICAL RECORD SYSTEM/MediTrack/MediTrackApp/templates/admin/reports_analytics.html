@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reports Analytics | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/reports_analytics.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Reports & Analytics</h1>
+        <a href="{% url 'generate_report' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Generate Report
+        </a>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Users</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_users }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Active Users</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.active_users }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-person-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Total Appointments</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_appointments }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-calendar-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Today's Appointments</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.today_appointments }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-calendar-day fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-xl-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Appointments Overview</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="appointmentsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">User Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="userDistributionChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-primary"></i> Admins
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-success"></i> Doctors
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-info"></i> Patients
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Reports -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Recently Generated Reports</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="reportsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Format</th>
+                            <th>Generated On</th>
+                            <th>Generated By</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in recent_reports %}
+                        <tr>
+                            <td>{{ report.title }}</td>
+                            <td>{{ report.get_report_type_display }}</td>
+                            <td>{{ report.get_format_display }}</td>
+                            <td>{{ report.generated_at|date:"M d, Y H:i" }}</td>
+                            <td>{{ report.generated_by.get_full_name }}</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'view_report' report.id %}" class="btn btn-sm btn-outline-primary"
+                                       data-toggle="tooltip" title="View Report">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ report.file.url }}" download class="btn btn-sm btn-outline-success"
+                                       data-toggle="tooltip" title="Download">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                    <form method="post" action="{% url 'delete_report' report.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" onclick="return confirm('Are you sure you want to delete this report?');" 
+                                                class="btn btn-sm btn-outline-danger" data-toggle="tooltip" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">No reports generated yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+// Area Chart - Appointments
+var ctx = document.getElementById("appointmentsChart");
+var appointmentsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [
+            {% for day in last_30_days %}
+                "{{ day|date:'M d' }}",
+            {% endfor %}
+        ],
+        datasets: [{
+            label: "Appointments",
+            lineTension: 0.3,
+            backgroundColor: "rgba(78, 115, 223, 0.05)",
+            borderColor: "rgba(78, 115, 223, 1)",
+            pointRadius: 3,
+            pointBackgroundColor: "rgba(78, 115, 223, 1)",
+            pointBorderColor: "rgba(78, 115, 223, 1)",
+            pointHoverRadius: 3,
+            pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+            pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+            pointHitRadius: 10,
+            pointBorderWidth: 2,
+            data: [
+                {% for count in daily_appointments %}
+                    {{ count }},
+                {% endfor %}
+            ],
+        }],
+    },
+    options: {
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                }
+            },
+            y: {
+                ticks: {
+                    beginAtZero: true,
+                    precision: 0
+                },
+                grid: {
+                    color: "rgb(234, 236, 244)",
+                    drawBorder: false
+                }
+            }
+        }
+    }
+});
+
+// Pie Chart - User Distribution
+var ctx2 = document.getElementById("userDistributionChart");
+var userDistributionChart = new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+        labels: ["Admins", "Doctors", "Patients"],
+        datasets: [{
+            data: [{{ admin_count }}, {{ doctor_count }}, {{ patient_count }}],
+            backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
+            hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+            hoverBorderColor: "rgba(234, 236, 244, 1)",
+        }],
+    },
+    options: {
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        cutout: '70%',
+    },
+});
+</script>
+{% endblock %}

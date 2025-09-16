@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Announcements | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/announcements.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Announcements Management</h1>
+        <a href="{% url 'create_announcements' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> New Announcement
+        </a>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filters</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="statusFilter" class="form-label">Status</label>
+                    <select class="form-select" id="statusFilter" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="priorityFilter" class="form-label">Priority</label>
+                    <select class="form-select" id="priorityFilter" name="priority">
+                        <option value="">All Priorities</option>
+                        {% for value, label in priority_choices %}
+                        <option value="{{ value }}" {% if request.GET.priority == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="searchInput" class="form-label">Search</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchInput" name="q" 
+                               placeholder="Search announcements..." value="{{ request.GET.q }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-funnel"></i> Apply Filters
+                    </button>
+                    <a href="{% url 'announcements' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Announcements List -->
+    <div class="card shadow">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Announcements List</h6>
+            <span class="badge bg-primary">
+                Total: {{ page_obj.paginator.count }}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="announcementsTable">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Priority</th>
+                            <th>Target Roles</th>
+                            <th>Status</th>
+                            <th>Date Range</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for announcement in page_obj %}
+                        <tr>
+                            <td>
+                                <strong>{{ announcement.title| default:"not found" }}</strong>
+                                <div class="text-muted small mt-1">
+                                    Created by {{ announcement.created_by.get_full_name }} on {{ announcement.created_at|date:"M d, Y" }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if announcement.priority == 'urgent' %}bg-danger
+                                    {% elif announcement.priority == 'high' %}bg-warning
+                                    {% elif announcement.priority == 'medium' %}bg-primary
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                    {{ announcement.get_priority_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% for role in announcement.target_roles %}
+                                <span class="badge 
+                                    {% if role == 'admin' %}bg-danger
+                                    {% elif role == 'doctor' %}bg-primary
+                                    {% else %}bg-success
+                                    {% endif %} me-1 mb-1">
+                                    {{ role|title }}
+                                </span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% if announcement.is_active and announcement.is_current %}
+                                <span class="badge bg-success">Active</span>
+                                {% elif announcement.is_active %}
+                                <span class="badge bg-info">Scheduled</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ announcement.start_date|date:"M d, Y" }}
+                                {% if announcement.end_date %}
+                                <br>to {{ announcement.end_date|date:"M d, Y" }}
+                                {% else %}
+                                <br><span class="text-muted small">No end date</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'edit_announcement' announcement.pk %}" 
+                                       class="btn btn-sm btn-outline-primary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form method="post" action="{% url 'toggle_announcement' announcement.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm 
+                                            {% if announcement.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
+                                            title="{% if announcement.is_active %}Deactivate{% else %}Activate{% endif %}">
+                                            {% if announcement.is_active %}
+                                            <i class="bi bi-pause"></i>
+                                            {% else %}
+                                            <i class="bi bi-play"></i>
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'delete_announcement' announcement.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                onclick="return confirm('Are you sure you want to delete this announcement?');"
+                                                title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="bi bi-megaphone display-6"></i>
+                                    <h5>No announcements found</h5>
+                                    {% if request.GET.status or request.GET.priority or request.GET.q %}
+                                    <p>Try changing your search filters</p>
+                                    <a href="{% url 'announcements' %}" class="btn btn-primary mt-2">
+                                        Reset Filters
+                                    </a>
+                                    {% else %}
+                                    <p>No announcements have been created yet</p>
+                                    <a href="{% url 'create_announcement' %}" class="btn btn-primary mt-2">
+                                        <i class="bi bi-plus-circle"></i> Create First Announcement
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-hidden="true">&laquo;</span>
+                    </li>
+                    {% endif %}
+
+                    {% for i in page_obj.paginator.page_range %}
+                        {% if page_obj.number == i %}
+                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-hidden="true">&raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Auto-submit filters when changed
+    $('#statusFilter, #priorityFilter').change(function() {
+        $(this).closest('form').submit();
+    });
+});
+</script>
+{% endblock %}

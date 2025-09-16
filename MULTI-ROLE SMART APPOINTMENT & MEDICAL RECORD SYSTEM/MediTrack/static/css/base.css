@@ -1,0 +1,85 @@
+/* Sidebar styling */
+#sidebar {
+    width: 250px;
+    top: 56px; /* Below navbar */
+    bottom: 0;
+    height: calc(100vh - 56px);
+    transition: all 0.3s;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+/* Collapsed Sidebar */
+#sidebar.collapsed {
+    width: 70px;
+}
+#sidebar.collapsed .link-text {
+    display: none;
+}
+
+/* Main Content Adjust */
+#main-content {
+    margin-left: 250px;
+    padding-top: 80px; /* Below navbar */
+    padding-bottom: 20px;
+    transition: all 0.3s;
+    min-height: calc(100vh - 56px - 40px); /* Account for navbar and footer */
+}
+
+#main-content.full-width {
+    margin-left: 0;
+}
+
+#main-content.collapsed {
+    margin-left: 70px;
+}
+
+/* Footer styling */
+#main-footer {
+    margin-left: 250px;
+    transition: all 0.3s;
+}
+
+#main-footer.full-width {
+    margin-left: 0;
+}
+
+#main-footer.collapsed {
+    margin-left: 70px;
+}
+
+/* Sidebar Links */
+#sidebar .list-group-item {
+    border: none;
+    padding: 12px 20px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+#sidebar .list-group-item:hover {
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 992px) {
+    #sidebar {
+        left: -250px;
+    }
+    #sidebar.active {
+        left: 0;
+        width: 250px;
+    }
+    #main-content, #main-footer {
+        margin-left: 0 !important;
+    }
+    
+    /* Show mobile toggle button */
+    #mobileSidebarToggle {
+        display: block !important;
+    }
+}
+
+/* Ensure content doesn't hide behind navbar */
+body {
+    padding-top: 56px;
+}

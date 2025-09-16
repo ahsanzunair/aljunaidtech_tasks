@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Activity Log Details | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Activity Log Details</h1>
+        <a href="{% url 'activity_logs' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Logs
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex align-items-center">
+                    <span class="badge bg-{{ log.action_color }} me-2">
+                        <i class="bi {{ log.action_icon }}"></i>
+                    </span>
+                    <h6 class="m-0 font-weight-bold text-primary">Log Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Action:</strong> {{ log.get_action_display }}</p>
+                            <p><strong>Timestamp:</strong> {{ log.created_at|date:"M d, Y H:i:s" }}</p>
+                            <p><strong>User:</strong> 
+                                {% if log.user %}
+                                {{ log.user.get_full_name }} (@{{ log.user.username }})
+                                {% else %}
+                                <span class="text-muted">System</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>IP Address:</strong> {{ log.ip_address|default:"N/A" }}</p>
+                            <p><strong>User Agent:</strong> {{ log.user_agent|default:"N/A" }}</p>
+                            <p><strong>Model:</strong> {{ log.model_name|default:"N/A" }}</p>
+                            <p><strong>Object ID:</strong> {{ log.object_id|default:"N/A" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Details</h6>
+                </div>
+                <div class="card-body">
+                    {% if log.details %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for key, value in log.details.items %}
+                                <tr>
+                                    <td><strong>{{ key|title }}</strong></td>
+                                    <td>
+                                        {% if value is mapping %}
+                                            <pre class="mb-0">{{ value|pprint }}</pre>
+                                        {% else %}
+                                            {{ value }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No additional details available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">User Information</h6>
+                </div>
+                <div class="card-body">
+                    {% if log.user %}
+                    <div class="text-center mb-3">
+                        {% if log.user.profile_pic %}
+                        <img src="{{ log.user.profile_pic.url }}" alt="Profile" class="rounded-circle" width="80" height="80">
+                        {% else %}
+                        <div class="avatar-placeholder rounded-circle mx-auto d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 80px; height: 80px;">
+                            {{ log.user.first_name|first|upper }}{{ log.user.last_name|first|upper }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Name:</strong> {{ log.user.get_full_name }}<br>
+                        <strong>Username:</strong> @{{ log.user.username }}<br>
+                        <strong>Email:</strong> {{ log.user.email }}<br>
+                        <strong>Role:</strong> 
+                        <span class="badge 
+                            {% if log.user.role == 'admin' %}bg-danger
+                            {% elif log.user.role == 'doctor' %}bg-primary
+                            {% else %}bg-success
+                            {% endif %}">
+                            {{ log.user.get_role_display }}
+                        </span><br>
+                        <strong>Status:</strong> 
+                        <span class="badge {% if log.user.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ log.user.is_active|yesno:"Active,Inactive" }}
+                        </span>
+                    </div>
+                    
+                    <div class="text-center">
+                        <a href="{% url 'view_user' log.user.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-person"></i> View Profile
+                        </a>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">System-generated activity</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+.medication-item {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.medication-item .card-header {
+    border-radius: 8px 8px 0 0;
+}
+
+.form-control:focus {
+    border-color: #2a5bd7;
+    box-shadow: 0 0 0 0.2rem rgba(42, 91, 215, 0.25);
+}
+
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.invalid-feedback {
+    display: block;
+    color: #e74a3b;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.is-invalid {
+    border-color: #e74a3b;
+}
+
+.is-invalid:focus {
+    border-color: #e74a3b;
+    box-shadow: 0 0 0 0.2rem rgba(231, 74, 59, 0.25);
+}

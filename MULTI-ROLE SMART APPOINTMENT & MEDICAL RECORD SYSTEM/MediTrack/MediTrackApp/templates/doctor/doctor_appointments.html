@@ -1,0 +1,517 @@
+{% extends "base.html" %}
+    {% load static %}
+
+    {% block title %}Doctor Appointments - Smart Appointment & Medical Record System{% endblock %}
+
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/doctor/appointments.css' %}">
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    {% endblock %}
+
+    {% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Main Content Column -->
+            <div class="col-12 px-4 py-3">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h2 mb-1">Appointment Management</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'doctor_dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Appointments</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary" id="refreshBtn">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary active" id="tableViewBtn">
+                                <i class="fas fa-list"></i> Table
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="calendarViewBtn">
+                                <i class="fas fa-calendar"></i> Calendar
+                            </button>
+                        </div>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                    </div>
+                </div>
+
+                <!-- View Toggle Alert -->
+                <div class="alert alert-info d-flex align-items-center d-none" id="viewAlert" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <div>You're viewing filtered appointments. <a href="#" id="clearFilters">Clear all filters</a></div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-start-primary border-3 shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">Today's Appointments</div>
+                                        <div class="h5 mb-0 fw-bold text-gray-800">{{ today_appointments.count }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-calendar-day text-gray-300 fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-start-success border-3 shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs fw-bold text-success text-uppercase mb-1">Pending Approval</div>
+                                        <div class="h5 mb-0 fw-bold text-gray-800">{{ pending_appointments.count }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-clock text-gray-300 fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-start-info border-3 shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs fw-bold text-info text-uppercase mb-1">Completed This Week</div>
+                                        <div class="h5 mb-0 fw-bold text-gray-800">{{ weekly_completed.count }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-check-circle text-gray-300 fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-start-warning border-3 shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs fw-bold text-warning text-uppercase mb-1">Cancelled</div>
+                                        <div class="h5 mb-0 fw-bold text-gray-800">{{ cancelled_appointments.count }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-times-circle text-gray-300 fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table View -->
+                <div class="card shadow mb-4" id="tableView">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 fw-bold text-primary">Appointments List</h6>
+                        <div>
+                            <span class="badge bg-primary">{{ appointments.count }} total</span>
+                            <button class="btn btn-sm btn-outline-secondary ms-2" id="exportBtn">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="appointmentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Date & Time</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in appointments %}
+                                    <tr class="appointment-row" data-appointment-id="{{ appointment.id }}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if appointment.patient.user.profile_pic %}
+                                                <img src="{{ appointment.patient.user.profile_pic.url }}" class="rounded-circle me-3" width="40" height="40" alt="{{ appointment.patient.user.get_full_name }}">
+                                                {% else %}
+                                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                                    {{ appointment.patient.user.first_name|first|upper }}{{ appointment.patient.user.last_name|first|upper }}
+                                                </div>
+                                                {% endif %}
+                                                <div>
+                                                    <strong>{{ appointment.patient.user.get_full_name }}</strong>
+                                                    <div class="text-muted small">
+                                                        {% if appointment.patient.user.date_of_birth %}
+                                                        Age: {{ appointment.patient.user.date_of_birth|timesince }}
+                                                        {% else %}
+                                                        Age: N/A
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>{{ appointment.date|date:"M d, Y" }}</div>
+                                            <div class="text-muted small">{{ appointment.time|time:"h:i A" }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ appointment.get_reason_display }}</span>
+                                            {% if appointment.symptoms %}
+                                            <div class="text-muted small mt-1" title="{{ appointment.symptoms }}">
+                                                {{ appointment.symptoms|truncatewords:5 }}
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if appointment.status == 'confirmed' %}bg-success
+                                                {% elif appointment.status == 'pending' %}bg-warning
+                                                {% elif appointment.status == 'completed' %}bg-primary
+                                                {% elif appointment.status == 'cancelled' %}bg-danger
+                                                {% else %}bg-secondary{% endif %}">
+                                                {{ appointment.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <a href="{% url 'appointment_update_status' appointment.id %}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Update Status">
+                                                    <i class="fas fa-edit me-1"></i> Update
+                                                </a>
+                                                {% if appointment.status == 'confirmed' or appointment.status == 'completed' %}
+                                                <a href="{% url 'create_prescription' appointment.id %}" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Create Prescription">
+                                                    <i class="fas fa-file-medical me-1"></i> Prescribe
+                                                </a>
+                                                {% endif %}
+                                                <a href="{% url 'doctor_patient_record' appointment.patient.id %}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="View Medical Records">
+                                                    <i class="fas fa-file-medical-alt me-1"></i> Records
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <i class="fas fa-calendar-times display-4 text-muted d-block mb-2"></i>
+                                            <h5>No appointments found</h5>
+                                            <p class="text-muted">You don't have any appointments scheduled yet.</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if appointments.has_other_pages %}
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if appointments.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ appointments.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for i in appointments.paginator.page_range %}
+                                    {% if appointments.number == i %}
+                                    <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                                    {% else %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if appointments.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ appointments.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Calendar View -->
+                <div class="card shadow mb-4 d-none" id="calendarView">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 fw-bold text-primary">Calendar View</h6>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary" id="prevBtn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" id="nextBtn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" id="todayBtn">
+                                Today
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="calendar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Modal -->
+    <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="filterModalLabel">Filter Appointments</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="get" id="filterForm">
+                        <div class="mb-3">
+                            <label for="statusFilter" class="form-label">Status</label>
+                            <select class="form-select" id="statusFilter" name="status">
+                                <option value="">All Statuses</option>
+                                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="confirmed" {% if request.GET.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                                <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="dateFilter" class="form-label">Date Range</label>
+                            <div class="input-group">
+                                <input type="date" class="form-control" name="start_date" value="{{ request.GET.start_date }}">
+                                <span class="input-group-text">to</span>
+                                <input type="date" class="form-control" name="end_date" value="{{ request.GET.end_date }}">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reasonFilter" class="form-label">Reason</label>
+                            <select class="form-select" id="reasonFilter" name="reason">
+                                <option value="">All Reasons</option>
+                                {% for reason_value, reason_display in appointment_reasons %}
+                                <option value="{{ reason_value }}" {% if request.GET.reason == reason_value %}selected{% endif %}>{{ reason_display }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-danger" id="resetFilters">Reset</button>
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('filterForm').submit()">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointment Detail Modal -->
+    <div class="modal fade" id="appointmentDetailModal" tabindex="-1" aria-labelledby="appointmentDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="appointmentDetailModalLabel">Appointment Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="appointmentDetailContent">
+                    <!-- Content will be loaded via AJAX -->
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block extra_js %}
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        // Enable tooltips
+        $('[data-bs-toggle="tooltip"]').tooltip();
+
+        // Refresh button functionality
+        $('#refreshBtn').click(function() {
+            $(this).prop('disabled', true).html('<i class="fas fa-sync-alt fa-spin"></i> Refreshing...');
+            location.reload();
+        });
+
+        // View toggle functionality
+        $('#tableViewBtn').click(function() {
+            $('#tableView').removeClass('d-none');
+            $('#calendarView').addClass('d-none');
+            $(this).addClass('active');
+            $('#calendarViewBtn').removeClass('active');
+        });
+
+        $('#calendarViewBtn').click(function() {
+            $('#tableView').addClass('d-none');
+            $('#calendarView').removeClass('d-none');
+            $(this).addClass('active');
+            $('#tableViewBtn').removeClass('active');
+            initCalendar(); // Initialize calendar if not already done
+        });
+
+        // Check if filters are applied
+        function checkFilters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.toString()) {
+                $('#viewAlert').removeClass('d-none');
+            }
+        }
+        
+        checkFilters();
+        
+        // Clear filters
+        $('#clearFilters').click(function(e) {
+            e.preventDefault();
+            window.location.href = window.location.pathname;
+        });
+        
+        // Reset filters in modal
+        $('#resetFilters').click(function() {
+            $('#filterForm').find('select, input').val('');
+            $('#filterForm').find('input[type="checkbox"]').prop('checked', false);
+        });
+
+        // Export functionality
+        $('#exportBtn').click(function() {
+            // Get current filters
+            const params = new URLSearchParams(window.location.search);
+            params.set('export', 'csv');
+            
+            // Redirect to export URL
+            window.location.href = window.location.pathname + '?' + params.toString();
+        });
+
+        // Appointment detail modal
+        $('.appointment-details').click(function() {
+            const appointmentId = $(this).data('appointment-id');
+            const url = '{% url "appointment_detail_ajax" 0 %}'.replace('0', appointmentId);
+            
+            $('#appointmentDetailContent').html(`
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `);
+            
+            $.get(url, function(data) {
+                $('#appointmentDetailContent').html(data);
+            }).fail(function() {
+                $('#appointmentDetailContent').html(`
+                    <div class="alert alert-danger" role="alert">
+                        Failed to load appointment details. Please try again.
+                    </div>
+                `);
+            });
+        });
+
+        // Initialize calendar
+        function initCalendar() {
+            if ($('#calendar').hasClass('fc')) return; // Already initialized
+            
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: [
+                    {% for appointment in appointments %}
+                    {
+                        id: '{{ appointment.id }}',
+                        title: '{{ appointment.patient.user.get_full_name }} - {{ appointment.get_reason_display }}',
+                        start: '{{ appointment.date|date:"Y-m-d" }}T{{ appointment.time|time:"H:i:s" }}',
+                        {% if appointment.end_time %}
+                        end: '{{ appointment.date|date:"Y-m-d" }}T{{ appointment.end_time|time:"H:i:s" }}',
+                        {% else %}
+                        end: '{{ appointment.date|date:"Y-m-d" }}T{{ appointment.time|time:"H:i:s" }}',
+                        {% endif %}
+                        className: '{% if appointment.status == "confirmed" %}fc-event-confirmed{% elif appointment.status == "pending" %}fc-event-pending{% elif appointment.status == "completed" %}fc-event-completed{% elif appointment.status == "cancelled" %}fc-event-cancelled{% endif %}',
+                        extendedProps: {
+                            status: '{{ appointment.status }}',
+                            patient: '{{ appointment.patient.user.get_full_name }}',
+                            reason: '{{ appointment.get_reason_display }}'
+                        }
+                    },
+                    {% endfor %}
+                ],
+                eventClick: function(info) {
+                    const appointmentId = info.event.id;
+                    $(`.appointment-details[data-appointment-id="${appointmentId}"]`).click();
+                },
+                navLinks: true,
+                nowIndicator: true,
+                dayMaxEvents: true,
+                slotMinTime: '08:00:00',
+                slotMaxTime: '20:00:00',
+                businessHours: {
+                    daysOfWeek: [1, 2, 3, 4, 5, 6],
+                    startTime: '08:00',
+                    endTime: '18:00',
+                }
+            });
+            
+            calendar.render();
+            
+            // Calendar navigation buttons
+            $('#prevBtn').click(function() {
+                calendar.prev();
+            });
+            
+            $('#nextBtn').click(function() {
+                calendar.next();
+            });
+            
+            $('#todayBtn').click(function() {
+                calendar.today();
+            });
+        }
+
+        // Auto-refresh every 5 minutes
+        setInterval(function() {
+            $('#refreshBtn').click();
+        }, 300000);
+
+        // Status filter change
+        $('#statusFilter').change(function() {  
+            $('#filterForm').submit();
+        });
+        
+        // Real-time updates (simplified version)
+        function checkForUpdates() {
+            // This would typically connect to a WebSocket or use Server-Sent Events
+            // For now, we'll just refresh every 2 minutes
+            setTimeout(function() {
+                $('#refreshBtn').click();
+            }, 120000);
+        }
+        
+        checkForUpdates();
+    });
+    </script>
+    {% endblock %}

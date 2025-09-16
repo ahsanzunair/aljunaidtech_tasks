@@ -1,0 +1,62 @@
+/* Reports Dashboard Styles */
+.card {
+    border: none;
+    border-radius: 0.35rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+    padding: 1rem 1.35rem;
+}
+
+.chart-area, .chart-pie {
+    position: relative;
+    height: 20rem;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .chart-area {
+        height: 25rem;
+    }
+}
+
+#reportsTable th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #4e73df;
+}
+
+/* Generate Report Specific Styles */
+#reportForm .form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+#reportForm .form-control, 
+#reportForm .form-select {
+    border-radius: 0.35rem;
+    padding: 0.5rem 0.75rem;
+}
+
+#reportForm .invalid-feedback {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #e74a3b;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .btn-group .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}

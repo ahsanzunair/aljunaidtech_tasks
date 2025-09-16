@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}System Maintenance | MULTI-ROLE SMART APPOINTMENT & MEDICAL RECORD SYSTEM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/system_maintenance.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>System Maintenance</h2>
+        <a href="{% url 'system_settings' %}" class="btn btn-primary">
+            Back to System Settings <i class="bi bi-arrow-left"></i>
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <p class="mb-3">Perform system maintenance tasks to ensure smooth operation.</p>
+
+            <ul class="list-group mb-3">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Clear Cache
+                    <a href="#" class="btn btn-sm btn-warning">Run</a>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Optimize Database
+                    <a href="#" class="btn btn-sm btn-info">Run</a>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Clean Temporary Files
+                    <a href="#" class="btn btn-sm btn-danger">Run</a>
+                </li>
+            </ul>
+
+            <button class="btn btn-primary">Run All Maintenance Tasks</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

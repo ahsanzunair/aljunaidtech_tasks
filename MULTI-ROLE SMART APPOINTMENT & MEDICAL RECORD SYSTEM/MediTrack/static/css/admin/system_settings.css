@@ -1,0 +1,53 @@
+/* System Settings Styles */
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+}
+
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+    padding: 1rem 1.25rem;
+}
+
+.list-group-item.active {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.form-check-input:checked {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Statistics cards */
+.card.text-white .card-body {
+    padding: 1rem;
+}
+
+.card.text-white h4 {
+    margin-bottom: 0;
+    font-weight: 700;
+}
+
+.card.text-white h6 {
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .row > div {
+        margin-bottom: 1rem;
+    }
+}

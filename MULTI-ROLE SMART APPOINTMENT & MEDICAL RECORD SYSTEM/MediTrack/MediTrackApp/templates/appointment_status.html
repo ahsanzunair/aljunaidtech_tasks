@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Update Appointment Status{% endblock %}
+{% block content %}
+<div class="container">
+    <h3>Update Status for Appointment #{{ appointment.id }}</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+</div>
+{% endblock %}

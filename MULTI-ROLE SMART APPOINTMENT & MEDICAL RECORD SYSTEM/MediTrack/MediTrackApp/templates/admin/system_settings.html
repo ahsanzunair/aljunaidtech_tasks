@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}System Settings | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/system_settings.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>System Settings</h1>
+        <div class="btn-group">
+            <a href="{% url 'system_status' %}" class="btn btn-outline-info me-2">
+                <i class="bi bi-speedometer2"></i> System Status
+            </a>
+        </div>
+    </div>
+
+    <!-- System Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-2 col-6">
+            <div class="card text-white bg-primary">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Users</h6>
+                    <h4>{{ system_stats.total_users }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="card text-white bg-success">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Appointments</h6>
+                    <h4>{{ system_stats.total_appointments }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="card text-white bg-info">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Prescriptions</h6>
+                    <h4>{{ system_stats.total_prescriptions }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="card text-white bg-warning">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Activity Logs</h6>
+                    <h4>{{ system_stats.total_logs }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="card text-white bg-secondary">
+                <div class="card-body text-center">
+                    <h6 class="card-title">DB Size</h6>
+                    <h4>{{ system_stats.db_size|filesizeformat }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="card text-white bg-dark">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Media Size</h6>
+                    <h4>{{ system_stats.media_size|filesizeformat }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Settings Navigation -->
+        <div class="col-md-3">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold">Settings Categories</h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for value, label in categories %}
+                    <a href="?category={{ value }}" 
+                       class="list-group-item list-group-item-action {% if selected_category == value %}active{% endif %}">
+                        <i class="bi bi-gear me-2"></i>{{ label }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow mt-3">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'backup_management' %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                        <i class="bi bi-cloud-arrow-down"></i> Backup
+                    </a>
+                    <a href="{% url 'maintenance_tools' %}" class="btn btn-outline-warning btn-sm w-100 mb-2">
+                        <i class="bi bi-tools"></i> Maintenance
+                    </a>
+                    <a href="{% url 'activity_logs' %}" class="btn btn-outline-info btn-sm w-100">
+                        <i class="bi bi-activity"></i> View Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Form -->
+        <div class="col-md-9">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="bi bi-sliders"></i> {{ selected_category|title }} Settings
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% for key, form in setting_forms.items %}
+                        <div class="mb-4">
+                            {% if form.fields.value.widget.input_type == 'checkbox' %}
+                            <div class="form-check form-switch">
+                                {{ form.value }}
+                                <label class="form-check-label" for="{{ form.value.id_for_label }}">
+                                    <strong>{{ form.value.label }}</strong>
+                                </label>
+                            </div>
+                            {% else %}
+                            <div class="mb-3">
+                                <label for="{{ form.value.id_for_label }}" class="form-label">
+                                    <strong>{{ form.value.label }}</strong>
+                                </label>
+                                {{ form.value }}
+                            </div>
+                            {% endif %}
+                            
+                            {% if form.value.help_text %}
+                            <div class="form-text">{{ form.value.help_text }}</div>
+                            {% endif %}
+                            
+                            {% if form.value.errors %}
+                            <div class="text-danger small">
+                                {{ form.value.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <hr>
+                        {% endfor %}
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

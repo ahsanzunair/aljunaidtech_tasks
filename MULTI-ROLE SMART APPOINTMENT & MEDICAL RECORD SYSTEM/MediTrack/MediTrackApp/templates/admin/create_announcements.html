@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Announcement | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/announcements.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Create New Announcement</h1>
+        <a href="{% url 'announcements' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Announcements
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Announcement Details</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" id="announcementForm">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> Form Errors</h5>
+                    <ul class="mb-0">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+                
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            {{ form.title.label_tag }}
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.title.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            {{ form.content.label_tag }}
+                            {{ form.content }}
+                            {% if form.content.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.content.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.priority.label_tag }}
+                            {{ form.priority }}
+                            {% if form.priority.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.priority.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.is_active.label_tag }}
+                            <div class="form-check form-switch">
+                                {{ form.is_active }}
+                            </div>
+                            {% if form.is_active.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.is_active.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.start_date.label_tag }}
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.start_date.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.end_date.label_tag }}
+                            {{ form.end_date }}
+                            <small class="text-muted">Leave blank for no end date</small>
+                            {% if form.end_date.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.end_date.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label">Target Roles</label>
+                            <div class="border p-3 rounded">
+                                {{ form.target_roles }}
+                            </div>
+                            {% if form.target_roles.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.target_roles.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="reset" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save Announcement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Date validation
+    $('#id_start_date, #id_end_date').on('change', function() {
+        const startDate = new Date($('#id_start_date').val());
+        const endDate = new Date($('#id_end_date').val());
+        
+        if ($('#id_end_date').val() && endDate < startDate) {
+            alert('End date cannot be before start date');
+            $('#id_end_date').val('');
+        }
+    });
+});
+</script>
+{% endblock %}

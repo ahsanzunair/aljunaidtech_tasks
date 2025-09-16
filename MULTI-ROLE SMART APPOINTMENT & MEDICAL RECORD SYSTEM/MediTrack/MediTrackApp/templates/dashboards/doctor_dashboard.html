@@ -1,0 +1,384 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Doctor Dashboard | MediTrack System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/doctor/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard | MediTrack System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <link rel="stylesheet" href="{% static "css/doctor/dashboard.css" %}">
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h2 mb-1">Doctor Dashboard</h1>
+                    <p class="mb-1">Welcome back, Dr. {{ request.user.get_full_name|default:request.user.username }}</p>
+                    {% if user.doctor_profile.specialization %}
+                    <span class="badge bg-light text-dark">{{ user.doctor_profile.specialization }}</span>
+                    {% endif %}
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="d-flex align-items-center justify-content-md-end gap-3">
+                        <div class="profile-badge bg-primary">
+                            <img src="https://ui-avatars.com/api/?name=Dr.{{ request.user.get_full_name|default:request.user.username }}&background=random&size=36&rounded=true" alt="Profile" class="rounded-circle">
+                            <div class="text-end">
+                                <div class="fw-bold">Dr. {{ request.user.get_full_name|default:request.user.username }}</div>
+                                <small>{{ user.doctor_profile.specialization|default:"General Practitioner" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Stats Overview -->
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Appointments Card -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Upcoming Appointments</h5>
+                        <div>
+                            <a href="{% url 'doctor_appointments' %}" class="btn btn-sm btn-outline-primary me-2">
+                                <i class="fas fa-list me-1"></i> View All
+                            </a>
+                            <a href="{% url 'appointment_calendar_view' %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-calendar me-1"></i> Calendar
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="appointmentSearch" class="form-control" placeholder="Search appointments...">
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="appointmentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Date & Time</th>
+                                        <th>Status</th>
+                                        <th>Reason</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in appointments %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if appointment.patient.user.profile_pic %}
+                                                <img class="rounded-circle me-3" src="{{ appointment.patient.user.profile_pic.url }}" alt="Patient" width="40" height="40">
+                                                {% else %}
+                                                <div class="rounded-circle bg-secondary me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    <i class="fas fa-user text-white"></i>
+                                                </div>
+                                                {% endif %}
+                                                <div>
+                                                    <div class="fw-bold">{{ appointment.patient.user.get_full_name }}</div>
+                                                    <small class="text-muted">ID: {{ appointment.patient.id }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold">{{ appointment.date }}</div>
+                                            <small class="text-muted">{{ appointment.time }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge 
+                                                {% if appointment.status == 'confirmed' %}badge-confirmed
+                                                {% elif appointment.status == 'completed' %}badge-completed
+                                                {% elif appointment.status == 'pending' %}badge-pending
+                                                {% else %}badge-cancelled{% endif %}">
+                                                {{ appointment.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ appointment.get_reason_display }}</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{% url 'appointment_update_status' appointment.id %}" class="btn btn-sm btn-outline-primary" title="Edit Status">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                {% if appointment.status == 'confirmed' %}
+                                                <a href="{% url 'create_prescription' appointment.id %}" class="btn btn-sm btn-outline-success" title="Create Prescription">
+                                                    <i class="fas fa-file-medical"></i>
+                                                </a>
+                                                {% endif %}
+                                                <a href="{% url 'patient_details' appointment.patient.user.id %}" class="btn btn-sm btn-outline-info" title="View Patient">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                                            <h5 class="text-muted">No appointments scheduled</h5>
+                                            <p class="text-muted">You don't have any upcoming appointments.</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Prescriptions Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recent Prescriptions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            {% for prescription in recent_prescriptions %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ prescription.appointment.patient.user.get_full_name }}</h6>
+                                    <small class="text-muted">{{ prescription.created_at|date:"M d, Y" }} - {{ prescription.diagnosis|truncatewords:10 }}</small>
+                                </div>
+                                <span class="badge bg-light text-dark">
+                                    {{ prescription.medicine|length }} medicines
+                                </span>
+                            </div>
+                            {% empty %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-file-medical fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No prescriptions yet</h5>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if recent_prescriptions %}
+                        <div class="text-center mt-3">
+                            <a href="{% url 'prescription_list' %}" class="btn btn-outline-primary btn-action">
+                                View All Prescriptions
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Today's Schedule Card -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Today's Schedule</h5>
+                        <span class="badge bg-primary">{{ todays_appointments.count }}</span>
+                    </div>
+                    <div class="card-body">
+                        {% if todays_appointments %}
+                        <div class="timeline">
+                            {% for appointment in todays_appointments %}
+                            <div class="timeline-item {% if appointment.status == 'completed' %}completed{% endif %}">
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ appointment.time }}</h6>
+                                        <span class="status-badge {% if appointment.status == 'completed' %}badge-completed{% else %}badge-confirmed{% endif %}">
+                                            {{ appointment.get_status_display }}
+                                        </span>
+                                    </div>
+                                    <p class="mb-0">{{ appointment.patient.user.get_full_name }}</p>
+                                    <small class="text-muted">{{ appointment.get_reason_display }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-calendar-check fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">No appointments today</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Quick Actions Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-actions">
+                            <a href="{% url 'availability_update' %}" class="btn btn-outline-primary btn-action">
+                                <i class="fas fa-clock me-2"></i> Update Availability
+                            </a>
+                            <a href="{% url 'doctor_create_prescription' %}" class="btn btn-outline-success btn-action">
+                                <i class="fas fa-prescription me-2"></i> Create Prescription
+                            </a>
+                            <a href="{% url 'edit_profile' %}" class="btn btn-outline-info btn-action">
+                                <i class="fas fa-user-edit me-2"></i> Edit Profile
+                            </a>
+                            <a href="#" class="btn btn-outline-warning btn-action">
+                                <i class="fas fa-stethoscope me-2"></i> Start Consultation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Monthly Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="appointmentStatsChart"></canvas>
+                        </div>
+                        <div class="mt-4 text-center small">
+                            <span class="me-3"><i class="fas fa-circle text-primary"></i> Confirmed</span>
+                            <span class="me-3"><i class="fas fa-circle text-success"></i> Completed</span>
+                            <span><i class="fas fa-circle text-warning"></i> Pending</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Modal -->
+    <div class="modal fade" id="calendarModal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="calendarModalLabel">Appointment Calendar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update current time
+            function updateTime() {
+                const now = new Date();
+                const timeEl = document.getElementById('current-time');
+                if (timeEl) {
+                    timeEl.textContent = 
+                        now.toLocaleTimeString('en-US', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: true 
+                        });
+                }
+            }
+            
+            updateTime();
+            setInterval(updateTime, 60000);
+
+            // Appointment statistics chart
+            const ctx = document.getElementById('appointmentStatsChart').getContext('2d');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Confirmed', 'Completed', 'Pending', 'Cancelled'],
+                        datasets: [{
+                            data: [{{ stats.confirmed }}, {{ stats.completed }}, {{ stats.pending }}, {{ stats.cancelled }}],
+                            backgroundColor: ['#2a5bd7', '#1cc88a', '#f6c23e', '#e74a3b'],
+                            hoverBackgroundColor: ['#1a4bbd', '#0caa74', '#e6b22e', '#d7342a'],
+                            hoverBorderColor: "rgba(234, 236, 244, 1)",
+                        }],
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+
+            // Filter appointments table
+            const appointmentSearch = document.getElementById('appointmentSearch');
+            if (appointmentSearch) {
+                appointmentSearch.addEventListener('keyup', function() {
+                    const filter = this.value.toLowerCase();
+                    const table = document.getElementById('appointmentsTable');
+                    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+                    
+                    for (let i = 0; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (row.textContent.toLowerCase().indexOf(filter) > -1) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+            }
+
+            // Initialize calendar
+            const calendarEl = document.getElementById('calendar');
+            if (calendarEl) {
+                const calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    events: [
+                        {% for appointment in appointments %}
+                        {
+                            title: '{{ appointment.patient.user.get_full_name }} - {{ appointment.get_reason_display }}',
+                            start: '{{ appointment.date|date:"Y-m-d" }}T{{ appointment.time|time:"H:i:s" }}',
+                            backgroundColor: 
+                                {% if appointment.status == 'confirmed' %}'#2a5bd7'
+                                {% elif appointment.status == 'completed' %}'#1cc88a'
+                                {% elif appointment.status == 'pending' %}'#f6c23e'
+                                {% else %}'#e74a3b'{% endif %},
+                            borderColor: 
+                                {% if appointment.status == 'confirmed' %}'#1a4bbd'
+                                {% elif appointment.status == 'completed' %}'#0caa74'
+                                {% elif appointment.status == 'pending' %}'#e6b22e'
+                                {% else %}'#d7342a'{% endif %},
+                            extendedProps: {
+                                status: '{{ appointment.status }}',
+                                reason: '{{ appointment.get_reason_display }}',
+                                patient: '{{ appointment.patient.user.get_full_name }}'
+                            }
+                        },
+                        {% endfor %}
+                    ],
+                    eventClick: function(info) {
+                        const event = info.event;
+                        alert(`Appointment Details:\nPatient: ${event.extendedProps.patient}\nReason: ${event.extendedProps.reason}\nStatus: ${event.extendedProps.status}`);
+                    }
+                });
+                calendar.render();
+            }
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

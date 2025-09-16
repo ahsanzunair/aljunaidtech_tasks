@@ -1,0 +1,424 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Doctor Schedule - Smart Appointment & Medical Record System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/doctor/schedule.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        
+        <!-- Main Content Column -->
+        <div class="col-12 px-4 py-3">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">Schedule Management</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'doctor_dashboard' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Schedule</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#availabilityModal">
+                        <i class="fas fa-clock"></i> Set Availability
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-start-primary border-3 shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs fw-bold text-primary text-uppercase mb-1">Today's Appointments</div>
+                                    <div class="h5 mb-0 fw-bold text-gray-800">{{ today_appointments.count }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-calendar-day text-gray-300 fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-start-success border-3 shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs fw-bold text-success text-uppercase mb-1">Available This Week</div>
+                                    <div class="h5 mb-0 fw-bold text-gray-800">{{ available_slots_week }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-check-circle text-gray-300 fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-start-info border-3 shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs fw-bold text-info text-uppercase mb-1">Busy Slots</div>
+                                    <div class="h5 mb-0 fw-bold text-gray-800">{{ busy_slots }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-clock text-gray-300 fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-start-warning border-3 shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs fw-bold text-warning text-uppercase mb-1">Time Off</div>
+                                    <div class="h5 mb-0 fw-bold text-gray-800">{{ time_off_count }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-bed text-gray-300 fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar View -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold text-primary">Schedule Calendar</h6>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" id="prevBtn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" id="nextBtn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" id="todayBtn">
+                            Today
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" id="monthViewBtn">
+                            Month
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary active" id="weekViewBtn">
+                            Week
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" id="dayViewBtn">
+                            Day
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+
+            <!-- Upcoming Appointments -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 fw-bold text-primary">Upcoming Appointments (Next 7 Days)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Date & Time</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in upcoming_appointments %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if appointment.patient.user.profile_pic %}
+                                            <img src="{{ appointment.patient.user.profile_pic.url }}" class="rounded-circle me-3" width="40" height="40" alt="{{ appointment.patient.user.get_full_name }}">
+                                            {% else %}
+                                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                                {{ appointment.patient.user.first_name|first|upper }}{{ appointment.patient.user.last_name|first|upper }}
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ appointment.patient.user.get_full_name }}</strong>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>{{ appointment.date|date:"M d, Y" }}</div>
+                                        <div class="text-muted small">{{ appointment.time }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ appointment.get_reason_display }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if appointment.status == 'confirmed' %}bg-success
+                                            {% elif appointment.status == 'pending' %}bg-warning
+                                            {% elif appointment.status == 'completed' %}bg-primary
+                                            {% elif appointment.status == 'cancelled' %}bg-danger
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ appointment.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'appointment_update_status' appointment.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {% if appointment.status == 'confirmed' or appointment.status == 'completed' %}
+                                            <a href="{% url 'create_prescription' appointment.id %}" class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-file-medical"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">
+                                        <i class="fas fa-calendar-times display-4 text-muted d-block mb-2"></i>
+                                        <h5>No upcoming appointments</h5>
+                                        <p class="text-muted">You don't have any appointments scheduled for the next 7 days.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Availability Modal -->
+<div class="modal fade" id="availabilityModal" tabindex="-1" aria-labelledby="availabilityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="availabilityModalLabel">Set Availability</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'availability_update' %}" id="availabilityForm">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">Working Days</h6>
+                        <div class="row">
+                            {% for day in days_of_week %}
+                            <div class="col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input day-checkbox" type="checkbox" name="available_days" value="{{ day.0 }}" id="day{{ day.0 }}"
+                                        {% if day.0 in doctor_profile.available_days %}checked{% endif %}>
+                                    <label class="form-check-label" for="day{{ day.0 }}">
+                                        {{ day.1 }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">Time Slots (24-hour format)</h6>
+                        <div id="timeSlotsContainer">
+                            {% for slot in doctor_profile.available_time_slots %}
+                            <div class="time-slot row mb-2">
+                                <div class="col-md-5">
+                                    <input type="time" class="form-control start-time" name="start_times" value="{{ slot.start }}" required>
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="time" class="form-control end-time" name="end_times" value="{{ slot.end }}" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-danger btn-sm remove-slot">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="time-slot row mb-2">
+                                <div class="col-md-5">
+                                    <input type="time" class="form-control start-time" name="start_times" value="09:00" required>
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="time" class="form-control end-time" name="end_times" value="17:00" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-danger btn-sm remove-slot">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="addTimeSlot">
+                            <i class="fas fa-plus"></i> Add Time Slot
+                        </button>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-primary mb-3">Appointment Duration</h6>
+                        <select class="form-select" name="appointment_duration">
+                            <option value="15" {% if doctor_profile.appointment_duration == 15 %}selected{% endif %}>15 minutes</option>
+                            <option value="30" {% if doctor_profile.appointment_duration == 30 %}selected{% endif %}>30 minutes</option>
+                            <option value="45" {% if doctor_profile.appointment_duration == 45 %}selected{% endif %}>45 minutes</option>
+                            <option value="60" {% if doctor_profile.appointment_duration == 60 %}selected{% endif %}>60 minutes</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveAvailability">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Initialize calendar
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        headerToolbar: false, // We're using custom buttons
+        events: [
+            {% for appointment in appointments %}
+            {
+                id: '{{ appointment.id }}',
+                title: '{{ appointment.patient.user.get_full_name }} - {{ appointment.get_reason_display }}',
+                start: '{{ appointment.date|date:"Y-m-d" }}T{{ appointment.time|time:"H:i:s" }}',
+                {% if appointment.end_time %}
+                end: '{{ appointment.date|date:"Y-m-d" }}T{{ appointment.end_time|time:"H:i:s" }}',
+                {% else %}
+                end: '{{ appointment.date|date:"Y-m-d" }}T{{ appointment.time|time:"H:i:s" }}',
+                {% endif %}
+                className: '{% if appointment.status == "confirmed" %}fc-event-confirmed{% elif appointment.status == "pending" %}fc-event-pending{% elif appointment.status == "completed" %}fc-event-completed{% elif appointment.status == "cancelled" %}fc-event-cancelled{% endif %}',
+                extendedProps: {
+                    status: '{{ appointment.status }}',
+                    patient: '{{ appointment.patient.user.get_full_name }}',
+                    reason: '{{ appointment.get_reason_display }}'
+                }
+            },
+            {% endfor %}
+        ],
+        eventClick: function(info) {
+            // Handle event click if needed
+        },
+        navLinks: true,
+        nowIndicator: true,
+        dayMaxEvents: true,
+        slotMinTime: '06:00:00',
+        slotMaxTime: '22:00:00',
+        businessHours: {
+            daysOfWeek: {{ doctor_profile.available_days|default:"[1,2,3,4,5]" }},
+            startTime: '08:00',
+            endTime: '18:00',
+        }
+    });
+    
+    calendar.render();
+
+    // Calendar navigation
+    $('#prevBtn').click(function() { calendar.prev(); });
+    $('#nextBtn').click(function() { calendar.next(); });
+    $('#todayBtn').click(function() { calendar.today(); });
+    $('#monthViewBtn').click(function() { 
+        calendar.changeView('dayGridMonth');
+        $(this).addClass('active').siblings().removeClass('active');
+    });
+    $('#weekViewBtn').click(function() { 
+        calendar.changeView('timeGridWeek');
+        $(this).addClass('active').siblings().removeClass('active');
+    });
+    $('#dayViewBtn').click(function() { 
+        calendar.changeView('timeGridDay');
+        $(this).addClass('active').siblings().removeClass('active');
+    });
+
+    // Time slot management
+    $('#addTimeSlot').click(function() {
+        const newSlot = `
+            <div class="time-slot row mb-2">
+                <div class="col-md-5">
+                    <input type="time" class="form-control start-time" name="start_times" value="09:00" required>
+                </div>
+                <div class="col-md-5">
+                    <input type="time" class="form-control end-time" name="end_times" value="17:00" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-sm remove-slot">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        $('#timeSlotsContainer').append(newSlot);
+    });
+
+    $(document).on('click', '.remove-slot', function() {
+        if ($('.time-slot').length > 1) {
+            $(this).closest('.time-slot').remove();
+        }
+    });
+
+    // Save availability
+    $('#saveAvailability').click(function() {
+        $('#availabilityForm').submit();
+    });
+
+    // Refresh button
+    $('#refreshBtn').click(function() {
+        $(this).prop('disabled', true).html('<i class="fas fa-sync-alt fa-spin"></i> Refreshing...');
+        location.reload();
+    });
+
+    // Validate time slots
+    $('#availabilityForm').on('submit', function(e) {
+        let valid = true;
+        $('.time-slot').each(function() {
+            const startTime = $(this).find('.start-time').val();
+            const endTime = $(this).find('.end-time').val();
+            
+            if (startTime >= endTime) {
+                alert('End time must be after start time');
+                valid = false;
+                return false;
+            }
+        });
+        
+        if (!valid) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

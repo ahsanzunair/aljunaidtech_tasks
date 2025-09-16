@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Create Prescription{% endblock %}
+{% block content %}
+<h3>Create Prescription for {{ appointment.patient.user.get_full_name }}</h3>
+
+<form method="post" id="prescriptionForm">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <!-- Medicine Input Fields -->
+    <div class="medicine-inputs">
+        <input type="text" id="med_name" placeholder="Medicine Name" class="form-control mb-2">
+        <input type="text" id="med_dose" placeholder="Dose" class="form-control mb-2">
+        <input type="text" id="med_duration" placeholder="Duration" class="form-control mb-2">
+        <input type="text" id="med_instructions" placeholder="Instructions" class="form-control mb-2">
+        <button type="button" id="addMedicine" class="btn btn-primary mb-3">Add Medicine</button>
+    </div>
+
+    <!-- Medicine List Preview -->
+    <ul id="medicineList"></ul>
+
+    <button type="submit" class="btn btn-success">Save Prescription</button>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let medicines = [];
+        const medicineField = document.getElementById("id_medicine"); // Hidden field
+        const list = document.getElementById("medicineList");
+
+        document.getElementById("addMedicine").addEventListener("click", function() {
+            let name = document.getElementById("med_name").value.trim();
+            let dose = document.getElementById("med_dose").value.trim();
+            let duration = document.getElementById("med_duration").value.trim();
+            let instructions = document.getElementById("med_instructions").value.trim();
+
+            if (!name || !dose || !duration) {
+                alert("Please fill in Name, Dose, and Duration.");
+                return;
+            }
+
+            let med = { name, dose, duration, instructions };
+            medicines.push(med);
+
+            // Update hidden field with JSON string
+            medicineField.value = JSON.stringify(medicines);
+
+            // Add to preview list
+            let li = document.createElement("li");
+            li.textContent = `${name} - ${dose} - ${duration} (${instructions || "No instructions"})`;
+            list.appendChild(li);
+
+            // Clear inputs
+            document.getElementById("med_name").value = "";
+            document.getElementById("med_dose").value = "";
+            document.getElementById("med_duration").value = "";
+            document.getElementById("med_instructions").value = "";
+        });
+    });
+</script>
+{% endblock %}

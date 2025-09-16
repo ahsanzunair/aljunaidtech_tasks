@@ -1,0 +1,405 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Appointment History | MediTrack{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">Appointment History</h1>
+        <div>
+            <button class="btn btn-outline-primary me-2" id="filterToggle">
+                <i class="fas fa-filter me-1"></i> Filters
+            </button>
+            <a href="{% url 'find_doctor' %}" class="btn btn-primary">
+                <i class="fas fa-calendar-plus me-1"></i> Book New Appointment
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-4 {% if not status_filter %}d-none{% endif %}" id="filterSection">
+        <div class="card-body">
+            <h5 class="card-title">Filter Appointments</h5>
+            <form method="get" action="{% url 'appointment_history' %}">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">All Statuses</option>
+                            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                            <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                            <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="sort" class="form-label">Sort By</label>
+                        <select class="form-select" id="sort" name="sort">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3 d-flex align-items-end">
+                        <div>
+                            <button type="submit" class="btn btn-primary me-2">Apply Filters</button>
+                            <a href="{% url 'appointment_history' %}" class="btn btn-outline-secondary">Reset</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Appointments List -->
+    <div class="card">
+        <div class="card-body">
+            {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Doctor</th>
+                            <th>Specialization</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in page_obj %}
+                        <tr class="{% if appointment.status == 'cancelled' %}table-secondary{% elif appointment.status == 'completed' %}table-success{% elif appointment.status == 'confirmed' %}table-info{% endif %}">
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold">{{ appointment.date|date:"M d, Y" }}</span>
+                                    <span class="text-muted">{{ appointment.time|time:"g:i A" }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if appointment.doctor.user.profile_pic %}
+                                    <img src="{{ appointment.doctor.user.profile_pic.url }}" alt="Dr. {{ appointment.doctor.user.get_full_name }}" 
+                                         class="rounded-circle me-2" width="32" height="32">
+                                    {% else %}
+                                    <img src="{% static 'images/default-doctor.png' %}" alt="Dr. {{ appointment.doctor.user.get_full_name }}" 
+                                         class="rounded-circle me-2" width="32" height="32">
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold">Dr. {{ appointment.doctor.user.get_full_name }}</div>
+                                        <small class="text-muted">{{ appointment.doctor.hospital }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ appointment.doctor.specialization }}</td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span>{{ appointment.get_reason_display }}</span>
+                                    {% if appointment.other_reason %}
+                                    <small class="text-muted">{{ appointment.other_reason }}</small>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if appointment.status == 'completed' %}bg-success
+                                    {% elif appointment.status == 'confirmed' %}bg-info
+                                    {% elif appointment.status == 'pending' %}bg-warning
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ appointment.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#appointmentDetailModal{{ appointment.id }}">
+                                                <i class="fas fa-eye me-2"></i> View Details
+                                            </a>
+                                        </li>
+                                        {% if appointment.status == 'pending' or appointment.status == 'confirmed' %}
+                                        <li>
+                                            <a class="dropdown-item text-warning" href="#" data-bs-toggle="modal" data-bs-target="#rescheduleModal{{ appointment.id }}">
+                                                <i class="fas fa-calendar-alt me-2"></i> Reschedule
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#cancelModal{{ appointment.id }}">
+                                                <i class="fas fa-times me-2"></i> Cancel
+                                            </a>
+                                        </li>
+                                        {% endif %}
+                                        {% if appointment.status == 'completed' %}
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="fas fa-file-medical me-2"></i> View Prescription
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="fas fa-star me-2"></i> Rate Doctor
+                                            </a>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Appointment Detail Modal -->
+                        <div class="modal fade" id="appointmentDetailModal{{ appointment.id }}" tabindex="-1" aria-labelledby="appointmentDetailModalLabel{{ appointment.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="appointmentDetailModalLabel{{ appointment.id }}">Appointment Details</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Appointment Information</h6>
+                                                <p><strong>Date:</strong> {{ appointment.date|date:"M d, Y" }}</p>
+                                                <p><strong>Time:</strong> {{ appointment.time|time:"g:i A" }}</p>
+                                                <p><strong>Status:</strong> 
+                                                    <span class="badge 
+                                                        {% if appointment.status == 'completed' %}bg-success
+                                                        {% elif appointment.status == 'confirmed' %}bg-info
+                                                        {% elif appointment.status == 'pending' %}bg-warning
+                                                        {% else %}bg-danger{% endif %}">
+                                                        {{ appointment.get_status_display }}
+                                                    </span>
+                                                </p>
+                                                <p><strong>Reason:</strong> {{ appointment.get_reason_display }}</p>
+                                                {% if appointment.other_reason %}
+                                                <p><strong>Other Reason:</strong> {{ appointment.other_reason }}</p>
+                                                {% endif %}
+                                                <p><strong>Symptoms:</strong> {{ appointment.symptoms|default:"Not provided" }}</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Doctor Information</h6>
+                                                <div class="d-flex align-items-center mb-3">
+                                                    {% if appointment.doctor.user.profile_pic %}
+                                                    <img src="{{ appointment.doctor.user.profile_pic.url }}" alt="Dr. {{ appointment.doctor.user.get_full_name }}" 
+                                                         class="rounded-circle me-3" width="64" height="64">
+                                                    {% else %}
+                                                    <img src="{% static 'images/default-doctor.png' %}" alt="Dr. {{ appointment.doctor.user.get_full_name }}" 
+                                                         class="rounded-circle me-3" width="64" height="64">
+                                                    {% endif %}
+                                                    <div>
+                                                        <h5 class="mb-0">Dr. {{ appointment.doctor.user.get_full_name }}</h5>
+                                                        <p class="text-muted mb-0">{{ appointment.doctor.specialization }}</p>
+                                                    </div>
+                                                </div>
+                                                <p><strong>Hospital:</strong> {{ appointment.doctor.hospital }}</p>
+                                                <p><strong>Qualification:</strong> {{ appointment.doctor.qualifications }}</p>
+                                                <p><strong>Fee:</strong> Rs. {{ appointment.doctor.consultation_fee }}</p>
+                                            </div>
+                                        </div>
+                                        {% if appointment.status == 'completed' and appointment.prescription %}
+                                        <hr>
+                                        <h6>Prescription</h6>
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <p><strong>Diagnosis:</strong> {{ appointment.prescription.diagnosis }}</p>
+                                                <p><strong>Medicines:</strong></p>
+                                                <ul>
+                                                    {% for medicine in appointment.prescription.medicine %}
+                                                    <li>{{ medicine.name }} - {{ medicine.dosage }} ({{ medicine.duration }})</li>
+                                                    {% endfor %}
+                                                </ul>
+                                                <p><strong>Advice:</strong> {{ appointment.prescription.advice }}</p>
+                                                {% if appointment.prescription.follow_up_date %}
+                                                <p><strong>Follow-up Date:</strong> {{ appointment.prescription.follow_up_date|date:"M d, Y" }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        {% if appointment.status == 'pending' or appointment.status == 'confirmed' %}
+                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#rescheduleModal{{ appointment.id }}">Reschedule</button>
+                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal{{ appointment.id }}">Cancel</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cancel Appointment Modal -->
+                        <div class="modal fade" id="cancelModal{{ appointment.id }}" tabindex="-1" aria-labelledby="cancelModalLabel{{ appointment.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="cancelModalLabel{{ appointment.id }}">Cancel Appointment</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Are you sure you want to cancel your appointment with <strong>Dr. {{ appointment.doctor.user.get_full_name }}</strong> on <strong>{{ appointment.date|date:"M d, Y" }}</strong> at <strong>{{ appointment.time|time:"g:i A" }}</strong>?</p>
+                                        <form id="cancelForm{{ appointment.id }}">
+                                            {% csrf_token %}
+                                            <div class="mb-3">
+                                                <label for="cancellationReason{{ appointment.id }}" class="form-label">Reason for cancellation</label>
+                                                <textarea class="form-control" id="cancellationReason{{ appointment.id }}" rows="3" placeholder="Please provide a reason for cancellation"></textarea>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-danger" onclick="cancelAppointment({{ appointment.id }})">Cancel Appointment</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reschedule Modal -->
+                        <div class="modal fade" id="rescheduleModal{{ appointment.id }}" tabindex="-1" aria-labelledby="rescheduleModalLabel{{ appointment.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="rescheduleModalLabel{{ appointment.id }}">Reschedule Appointment</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Reschedule your appointment with <strong>Dr. {{ appointment.doctor.user.get_full_name }}</strong></p>
+                                        <form id="rescheduleForm{{ appointment.id }}">
+                                            {% csrf_token %}
+                                            <div class="mb-3">
+                                                <label for="rescheduleDate{{ appointment.id }}" class="form-label">Select New Date</label>
+                                                <input type="date" class="form-control" id="rescheduleDate{{ appointment.id }}" min="{{ min_date }}">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Available Time Slots</label>
+                                                <div class="time-slots d-flex flex-wrap gap-2">
+                                                    <!-- Time slots would be loaded via AJAX based on selected date -->
+                                                    <div class="text-center py-3">
+                                                        <p class="text-muted">Select a date to see available time slots</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary" onclick="rescheduleAppointment({{ appointment.id }})">Reschedule</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Appointment pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}">&laquo; First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Last &raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                <h4>No appointments found</h4>
+                <p class="text-muted">You don't have any appointments yet. Book your first appointment to get started.</p>
+                <a href="{% url 'doctor_list' %}" class="btn btn-primary">
+                    <i class="fas fa-calendar-plus me-1"></i> Book Appointment
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle filter section
+        const filterToggle = document.getElementById('filterToggle');
+        const filterSection = document.getElementById('filterSection');
+        
+        if (filterToggle && filterSection) {
+            filterToggle.addEventListener('click', function() {
+                filterSection.classList.toggle('d-none');
+            });
+        }
+        
+        // Show filter section if a filter is already applied
+        {% if status_filter %}
+        if (filterSection) {
+            filterSection.classList.remove('d-none');
+        }
+        {% endif %}
+    });
+    
+    // Cancel appointment function
+    function cancelAppointment(appointmentId) {
+        const reason = document.getElementById(`cancellationReason${appointmentId}`).value;
+        
+        if (!reason) {
+            alert('Please provide a reason for cancellation.');
+            return;
+        }
+        
+        // In a real application, this would make an AJAX request to cancel the appointment
+        console.log(`Cancelling appointment ${appointmentId} with reason: ${reason}`);
+        
+        // Simulate success
+        alert('Appointment cancelled successfully.');
+        $(`#cancelModal${appointmentId}`).modal('hide');
+        
+        // In a real application, you would reload the page or update the UI
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    }
+    
+    // Reschedule appointment function
+    function rescheduleAppointment(appointmentId) {
+        const date = document.getElementById(`rescheduleDate${appointmentId}`).value;
+        
+        if (!date) {
+            alert('Please select a date to reschedule.');
+            return;
+        }
+        
+        // In a real application, this would make an AJAX request to reschedule the appointment
+        console.log(`Rescheduling appointment ${appointmentId} to date: ${date}`);
+        
+        // Simulate success
+        alert('Appointment rescheduled successfully.');
+        $(`#rescheduleModal${appointmentId}`).modal('hide');
+        
+        // In a real application, you would reload the page or update the UI
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    }
+</script>
+{% endblock %}

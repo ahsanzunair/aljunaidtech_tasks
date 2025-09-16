@@ -1,0 +1,123 @@
+<div class="appointment-details-content">
+    <div class="row">
+        <div class="col-md-6">
+            <h6 class="text-primary">Patient Information</h6>
+            <div class="d-flex align-items-center mb-3">
+                {% if appointment.patient.user.profile_pic %}
+                <img src="{{ appointment.patient.user.profile_pic.url }}" class="rounded-circle me-3" width="60" height="60" alt="{{ appointment.patient.user.get_full_name }}">
+                {% else %}
+                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                    {{ appointment.patient.user.first_name|first|upper }}{{ appointment.patient.user.last_name|first|upper }}
+                </div>
+                {% endif %}
+                <div>
+                    <h5 class="mb-0">{{ appointment.patient.user.get_full_name }}</h5>
+                    <div class="text-muted">
+                        {% if appointment.patient.user.date_of_birth %}
+                        Age: {{ appointment.patient.user.date_of_birth|timesince }}
+                        {% else %}
+                        Age: N/A
+                        {% endif %}
+                        | {{ appointment.patient.user.gender }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <strong>Contact:</strong><br>
+                {{ appointment.patient.user.email }}<br>
+                {{ appointment.patient.user.phone_number|default:"Phone not provided" }}
+            </div>
+            
+            {% if appointment.patient.blood_group %}
+            <div class="mb-3">
+                <strong>Blood Group:</strong> {{ appointment.patient.blood_group }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-6">
+            <h6 class="text-primary">Appointment Details</h6>
+            <div class="mb-3">
+                <strong>Date & Time:</strong><br>
+                {{ appointment.date|date:"F j, Y" }} at {{ appointment.time|time:"h:i A" }}
+            </div>
+            
+            <div class="mb-3">
+                <strong>Status:</strong>
+                <span class="badge 
+                    {% if appointment.status == 'confirmed' %}bg-success
+                    {% elif appointment.status == 'pending' %}bg-warning
+                    {% elif appointment.status == 'completed' %}bg-primary
+                    {% elif appointment.status == 'cancelled' %}bg-danger
+                    {% else %}bg-secondary{% endif %}">
+                    {{ appointment.get_status_display }}
+                </span>
+            </div>
+            
+            <div class="mb-3">
+                <strong>Reason:</strong> {{ appointment.get_reason_display }}
+            </div>
+            
+            {% if appointment.other_reason %}
+            <div class="mb-3">
+                <strong>Other Reason:</strong> {{ appointment.other_reason }}
+            </div>
+            {% endif %}
+            
+            {% if appointment.end_time %}
+            <div class="mb-3">
+                <strong>End Time:</strong> {{ appointment.end_time|time:"h:i A" }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if appointment.symptoms %}
+    <div class="row mt-3">
+        <div class="col-12">
+            <h6 class="text-primary">Symptoms</h6>
+            <div class="card">
+                <div class="card-body">
+                    {{ appointment.symptoms }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <small class="text-muted">
+                        Created: {{ appointment.created_at|date:"M j, Y h:i A" }}
+                    </small>
+                </div>
+                <div>
+                    <small class="text-muted">
+                        Last Updated: {{ appointment.updated_at|date:"M j, Y h:i A" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{% url 'appointment_update_status' appointment.id %}" class="btn btn-primary me-md-2">
+                    <i class="fas fa-edit me-1"></i> Update Status
+                </a>
+                {% if appointment.status == 'confirmed' or appointment.status == 'completed' %}
+                <a href="{% url 'create_prescription' appointment.id %}" class="btn btn-success">
+                    <i class="fas fa-file-medical me-1"></i> Create Prescription
+                </a>
+                {% endif %}
+                <a href="{% url 'doctor_patient_record' appointment.patient.id %}" class="btn btn-info ms-md-2">
+                    <i class="fas fa-file-medical-alt me-1"></i> Medical Records
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

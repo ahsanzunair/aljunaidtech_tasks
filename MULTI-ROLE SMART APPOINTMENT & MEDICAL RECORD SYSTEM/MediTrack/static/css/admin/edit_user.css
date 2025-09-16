@@ -1,0 +1,123 @@
+/* Edit User Specific Styles */
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.profile-pic-container {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.profile-pic-container:hover {
+    transform: scale(1.05);
+}
+
+.profile-pic-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.form-switch-lg .form-check-input {
+    width: 3rem;
+    height: 1.5rem;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+.form-control:focus + .input-group-text {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Validation styles */
+.needs-validation .form-control:invalid,
+.needs-validation .form-select:invalid {
+    border-color: #dc3545;
+}
+
+.needs-validation .form-control:valid,
+.needs-validation .form-select:valid {
+    border-color: #198754;
+}
+
+/* Hover effects */
+.btn {
+    transition: all 0.15s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .profile-pic-container {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .card-body .row.g-3 > [class*="col-"] {
+        margin-bottom: 1rem;
+    }
+    
+    .d-flex.gap-2 {
+        flex-wrap: wrap;
+    }
+    
+    .d-flex.gap-2 .btn {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Animation for showing/hiding doctor fields */
+#doctorFields {
+    transition: all 0.3s ease;
+    opacity: 1;
+}
+
+#doctorFields.d-none {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+/* Custom file upload button styling */
+input[type="file"] {
+    cursor: pointer;
+}
+
+/* Password toggle button styling */
+#togglePassword {
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Character counter styling */
+.form-text {
+    font-size: 0.75rem;
+}
+
+/* Focus states for accessibility */
+.form-control:focus,
+.form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}

@@ -1,0 +1,69 @@
+/* Activity Logs Styles */
+.card {
+    border: none;
+    border-radius: 0.35rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+#activityLogsTable th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #0D6EFD;
+}
+
+.badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35em 0.65em;
+}
+
+.log-details {
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+.avatar-placeholder {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* Status colors */
+.bg-success { background-color: #1cc88a !important; }
+.bg-danger { background-color: #e74a3b !important; }
+.bg-warning { background-color: #f6c23e !important; }
+.bg-info { background-color: #36b9cc !important; }
+.bg-primary { background-color: #0D6EFD !important; }
+.bg-secondary { background-color: #858796 !important; }
+
+/* Form Styles */
+.form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border-radius: 0.35rem;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .log-details {
+        max-width: 200px;
+    }
+    
+    .btn-group .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}

@@ -1,0 +1,468 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add User | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/add_user.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">Add New User</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'user_management' %}">Users</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Add User</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="{% url 'user_management' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Users
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header py-3 bg-primary text-white">
+            <h6 class="m-0 fw-bold"><i class="bi bi-person-plus me-2"></i>User Information</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="user-form" novalidate>
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading">Please fix the following errors:</h6>
+                    <ul class="mb-0">
+                        {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <div class="row">
+                    <!-- Basic Information Column -->
+                    <div class="col-lg-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="m-0 fw-bold"><i class="bi bi-person-badge me-2"></i>Basic Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                            {{ form.first_name.label }} *
+                                        </label>
+                                        {{ form.first_name }}
+                                        {% if form.first_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.first_name.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                            {{ form.last_name.label }} *
+                                        </label>
+                                        {{ form.last_name }}
+                                        {% if form.last_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.last_name.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                                            {{ form.username.label }} *
+                                        </label>
+                                        {{ form.username }}
+                                        {% if form.username.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.username.errors }}
+                                        </div>
+                                        {% endif %}
+                                        <div class="form-text">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                                            {{ form.email.label }} *
+                                        </label>
+                                        {{ form.email }}
+                                        {% if form.email.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.email.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="{{ form.phone_number.id_for_label }}" class="form-label">
+                                            {{ form.phone_number.label }}
+                                        </label>
+                                        {{ form.phone_number }}
+                                        {% if form.phone_number.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.phone_number.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="{{ form.gender.id_for_label }}" class="form-label">
+                                            {{ form.gender.label }}
+                                        </label>
+                                        {{ form.gender }}
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">
+                                            {{ form.date_of_birth.label }}
+                                        </label>
+                                        {{ form.date_of_birth }}
+                                        <div class="form-text">Format: YYYY-MM-DD</div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="{{ form.role.id_for_label }}" class="form-label">
+                                            {{ form.role.label }} *
+                                        </label>
+                                        {{ form.role }}
+                                        {% if form.role.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.role.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-12" id="admin-code-field" style="display: none;">
+                                        <label for="{{ form.admin_code.id_for_label }}" class="form-label">
+                                            {{ form.admin_code.label }} *
+                                        </label>
+                                        {{ form.admin_code }}
+                                        {% if form.admin_code.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.admin_code.errors }}
+                                        </div>
+                                        {% endif %}
+                                        <div class="form-text">Unique code required for admin identification</div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <label for="{{ form.profile_pic.id_for_label }}" class="form-label">
+                                            {{ form.profile_pic.label }}
+                                        </label>
+                                        {{ form.profile_pic }}
+                                        {% if form.profile_pic.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.profile_pic.errors }}
+                                        </div>
+                                        {% endif %}
+                                        <div class="form-text">Recommended size: 300x300 pixels. Max size: 2MB.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Account Security Column -->
+                    <div class="col-lg-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="m-0 fw-bold"><i class="bi bi-shield-lock me-2"></i>Account Security</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.password1.id_for_label }}" class="form-label">
+                                            {{ form.password1.label }} *
+                                        </label>
+                                        <div class="input-group">
+                                            {{ form.password1 }}
+                                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="{{ form.password1.id_for_label }}">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                        {% if form.password1.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.password1.errors }}
+                                        </div>
+                                        {% endif %}
+                                        <div class="password-strength mt-1">
+                                            <small>Strength: <span id="password-strength" class="fw-bold">None</span></small>
+                                            <div class="progress mt-1" style="height: 5px;">
+                                                <div id="password-strength-bar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="{{ form.password2.id_for_label }}" class="form-label">
+                                            {{ form.password2.label }} *
+                                        </label>
+                                        <div class="input-group">
+                                            {{ form.password2 }}
+                                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="{{ form.password2.id_for_label }}">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                        {% if form.password2.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.password2.errors }}
+                                        </div>
+                                        {% endif %}
+                                        <div class="form-text">Enter the same password as before, for verification.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Doctor Information -->
+                        <div class="card mb-4" id="doctor-fields" style="display: none;">
+                            <div class="card-header bg-light">
+                                <h6 class="m-0 fw-bold"><i class="bi bi-heart-pulse me-2"></i>Doctor Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label for="{{ form.specialization.id_for_label }}" class="form-label">
+                                            {{ form.specialization.label }} *
+                                        </label>
+                                        {{ form.specialization }}
+                                        {% if form.specialization.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.specialization.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <label for="{{ form.license_number.id_for_label }}" class="form-label">
+                                            {{ form.license_number.label }} *
+                                        </label>
+                                        {{ form.license_number }}
+                                        {% if form.license_number.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.license_number.errors }}
+                                        </div>
+                                        {% endif %}
+                                        <div class="form-text">Medical license registration number</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Patient Information -->
+                        <div class="card mb-4" id="patient-fields" style="display: none;">
+                            <div class="card-header bg-light">
+                                <h6 class="m-0 fw-bold"><i class="bi bi-person-video3 me-2"></i>Patient Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label for="{{ form.blood_group.id_for_label }}" class="form-label">
+                                            {{ form.blood_group.label }}
+                                        </label>
+                                        {{ form.blood_group }}
+                                        <div class="form-text">Patient's blood group for medical records</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mt-4 p-3 bg-light rounded">
+                    <div class="form-text">
+                        <i class="bi bi-info-circle me-1"></i>Fields marked with * are required
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="reset" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Form
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i> Create User
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Password visibility toggle functionality
+    $('.toggle-password').click(function() {
+        const targetId = $(this).data('target');
+        const passwordField = $('#' + targetId);
+        const icon = $(this).find('i');
+        
+        if (passwordField.attr('type') === 'password') {
+            passwordField.attr('type', 'text');
+            icon.removeClass('bi-eye').addClass('bi-eye-slash');
+            $(this).attr('aria-label', 'Hide password');
+        } else {
+            passwordField.attr('type', 'password');
+            icon.removeClass('bi-eye-slash').addClass('bi-eye');
+            $(this).attr('aria-label', 'Show password');
+        }
+    });
+    
+    // Show/hide role-specific fields
+    function toggleRoleFields() {
+        const role = $('#{{ form.role.id_for_label }}').val();
+        
+        // Hide all first
+        $('#doctor-fields, #patient-fields, #admin-code-field').hide();
+        
+        // Show relevant fields
+        if (role === 'doctor') {
+            $('#doctor-fields').show();
+            // Make doctor fields required
+            $('#{{ form.specialization.id_for_label }}').prop('required', true);
+            $('#{{ form.license_number.id_for_label }}').prop('required', true);
+        } else if (role === 'patient') {
+            $('#patient-fields').show();
+            // Remove required from doctor fields
+            $('#{{ form.specialization.id_for_label }}').prop('required', false);
+            $('#{{ form.license_number.id_for_label }}').prop('required', false);
+        } else if (role === 'admin') {
+            $('#admin-code-field').show();
+            // Remove required from doctor fields
+            $('#{{ form.specialization.id_for_label }}').prop('required', false);
+            $('#{{ form.license_number.id_for_label }}').prop('required', false);
+        } else {
+            // Remove required from doctor fields
+            $('#{{ form.specialization.id_for_label }}').prop('required', false);
+            $('#{{ form.license_number.id_for_label }}').prop('required', false);
+        }
+    }
+    
+    // Initial call
+    toggleRoleFields();
+    
+    // On role change
+    $('#{{ form.role.id_for_label }}').change(toggleRoleFields);
+    
+    // Password strength indicator
+    $('#{{ form.password1.id_for_label }}').on('input', function() {
+        const password = $(this).val();
+        let strength = 0;
+        let width = 0;
+        let color = '';
+        let text = '';
+        
+        if (password.length > 0) {
+            // Length check
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            
+            // Character type checks
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+            
+            // Calculate width and set colors
+            width = (strength / 5) * 100;
+            
+            switch(strength) {
+                case 0:
+                case 1:
+                    color = 'danger';
+                    text = 'Very Weak';
+                    break;
+                case 2:
+                    color = 'warning';
+                    text = 'Weak';
+                    break;
+                case 3:
+                    color = 'info';
+                    text = 'Moderate';
+                    break;
+                case 4:
+                    color = 'success';
+                    text = 'Strong';
+                    break;
+                case 5:
+                    color = 'success';
+                    text = 'Very Strong';
+                    break;
+                default:
+                    color = 'secondary';
+                    text = 'None';
+            }
+        }
+        
+        // Update UI
+        $('#password-strength').removeClass().addClass('fw-bold text-' + color).text(text);
+        $('#password-strength-bar').css('width', width + '%').removeClass().addClass('progress-bar bg-' + color);
+    });
+    
+    // Form validation
+    $('#user-form').on('submit', function(e) {
+        let isValid = true;
+        const role = $('#{{ form.role.id_for_label }}').val();
+        
+        // Validate required fields based on role
+        if (role === 'admin') {
+            if (!$('#{{ form.admin_code.id_for_label }}').val().trim()) {
+                isValid = false;
+                $('#{{ form.admin_code.id_for_label }}').addClass('is-invalid');
+            }
+        } else if (role === 'doctor') {
+            if (!$('#{{ form.specialization.id_for_label }}').val().trim()) {
+                isValid = false;
+                $('#{{ form.specialization.id_for_label }}').addClass('is-invalid');
+            }
+            if (!$('#{{ form.license_number.id_for_label }}').val().trim()) {
+                isValid = false;
+                $('#{{ form.license_number.id_for_label }}').addClass('is-invalid');
+            }
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            // Scroll to first error
+            $('.is-invalid').first().focus();
+        }
+    });
+    
+    // Remove validation styles when user starts typing
+    $('input, select').on('input', function() {
+        $(this).removeClass('is-invalid');
+    });
+    
+    // Profile picture preview
+    $('#{{ form.profile_pic.id_for_label }}').change(function() {
+        const file = this.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                alert('File size must be less than 2MB');
+                $(this).val('');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $('#profile-preview').remove();
+                $('#{{ form.profile_pic.id_for_label }}').after(
+                    '<div id="profile-preview" class="mt-2">' +
+                    '<img src="' + e.target.result + '" class="img-thumbnail" width="100" height="100">' +
+                    '</div>'
+                );
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
+{% endblock %}

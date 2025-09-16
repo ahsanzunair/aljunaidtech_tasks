@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Appointment Details | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Appointment Details</h1>
+        <a href="{% url 'appointment_management' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Appointments
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Appointment ID:</strong> {{ appointment.id }}</p>
+                            <p><strong>Date:</strong> {{ appointment.date|date:"M d, Y" }}</p>
+                            <p><strong>Time:</strong> {{ appointment.time|time:"h:i A" }}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="badge 
+                                    {% if appointment.status == 'confirmed' %}bg-success
+                                    {% elif appointment.status == 'pending' %}bg-warning text-dark
+                                    {% elif appointment.status == 'cancelled' %}bg-danger
+                                    {% else %}bg-info
+                                    {% endif %}">
+                                    {{ appointment.get_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Reason:</strong> {{ appointment.get_reason_display }}</p>
+                            {% if appointment.other_reason %}
+                            <p><strong>Additional Reason:</strong> {{ appointment.other_reason }}</p>
+                            {% endif %}
+                            {% if appointment.cancellation_reason %}
+                            <p><strong>Cancellation Reason:</strong> {{ appointment.cancellation_reason }}</p>
+                            {% endif %}
+                            <p><strong>Created At:</strong> {{ appointment.created_at|date:"M d, Y h:i A" }}</p>
+                            <p><strong>Last Updated:</strong> {{ appointment.updated_at|date:"M d, Y h:i A" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">Patient Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Name:</strong> {{ appointment.patient.user.get_full_name }}</p>
+                            <p><strong>Email:</strong> {{ appointment.patient.user.email }}</p>
+                            <p><strong>Phone:</strong> {{ appointment.patient.user.phone_number }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Blood Group:</strong> {{ appointment.patient.blood_group|default:"Not specified" }}</p>
+                            <p><strong>Allergies:</strong> {{ appointment.patient.allergies|default:"None" }}</p>
+                            <p><strong>Emergency Contact:</strong> {{ appointment.patient.emergency_contact|default:"Not specified" }}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <p><strong>Symptoms:</strong></p>
+                        <p>{{ appointment.symptoms|default:"No symptoms provided" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">Doctor Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Name:</strong> Dr. {{ appointment.doctor.user.get_full_name }}</p>
+                            <p><strong>Specialization:</strong> {{ appointment.doctor.specialization }}</p>
+                            <p><strong>Hospital:</strong> {{ appointment.doctor.hospital|default:"Not specified" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>City:</strong> {{ appointment.doctor.city }}</p>
+                            <p><strong>License Number:</strong> {{ appointment.doctor.license_number }}</p>
+                            <p><strong>Consultation Fee:</strong> Rs. {{ appointment.doctor.consultation_fee }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">Prescription</h5>
+                </div>
+                <div class="card-body">
+                    {% if appointment.prescription %}
+                        <p><strong>Diagnosis:</strong> {{ appointment.prescription.diagnosis }}</p>
+                        <p><strong>Advice:</strong> {{ appointment.prescription.advice|default:"None" }}</p>
+                        
+                        {% if appointment.prescription.medicine %}
+                        <div class="mt-3">
+                            <h6>Medicines:</h6>
+                            <ul class="list-group">
+                                {% for med in appointment.prescription.medicine %}
+                                <li class="list-group-item">
+                                    <strong>{{ med.name }}</strong><br>
+                                    Dose: {{ med.dose }} | Duration: {{ med.duration }}
+                                    {% if med.instructions %}<br>Instructions: {{ med.instructions }}{% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        {% if appointment.prescription.follow_up_date %}
+                        <div class="mt-3">
+                            <p><strong>Follow-up Date:</strong> {{ appointment.prescription.follow_up_date|date:"M d, Y" }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-3">
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-download"></i> Download PDF
+                            </a>
+                        </div>
+                    {% else %}
+                        <p>No prescription created yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Medical Records</h5>
+                </div>
+                <div class="card-body">
+                    {% if appointment.patient.medical_records.all %}
+                        <div class="list-group">
+                            {% for record in appointment.patient.medical_records.all %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ record.record_type|default:"Medical Record" }}</strong>
+                                    <small class="text-muted">{{ record.uploaded_at|date:"M d, Y" }}</small>
+                                </div>
+                                {% if record.notes %}
+                                <p class="mb-1 small">{{ record.notes }}</p>
+                                {% endif %}
+                                <a href="{{ record.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary mt-1">
+                                    <i class="bi bi-download"></i> Download
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No medical records uploaded.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

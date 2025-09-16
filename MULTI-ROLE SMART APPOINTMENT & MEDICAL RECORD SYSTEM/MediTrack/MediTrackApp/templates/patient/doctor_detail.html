@@ -1,0 +1,491 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Dr. {{ doctor.user.get_full_name }} | MediTrack{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'patient_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'find_doctor' %}">Find Doctors</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Dr. {{ doctor.user.get_full_name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Doctor Profile Header -->
+    <div class="row mb-5">
+        <div class="col-md-3 text-center mb-4 mb-md-0">
+            <!-- Doctor Image -->
+            <div class="doctor-image-container mb-3">
+                {% if doctor.user.profile_pic %}
+                <img src="{{ doctor.user.profile_pic.url }}" alt="Dr. {{ doctor.user.get_full_name }}" 
+                     class="img-fluid rounded-circle shadow" style="width: 180px; height: 180px; object-fit: cover;">
+                {% else %}
+                <img src="{% static 'images/default-doctor.png' %}" alt="Dr. {{ doctor.user.get_full_name }}" 
+                     class="img-fluid rounded-circle shadow" style="width: 180px; height: 180px; object-fit: cover;">
+                {% endif %}
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#bookingModal">
+                    <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                </button>
+                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#messageModal">
+                    <i class="fas fa-envelope me-2"></i>Send Message
+                </button>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1 class="h2 mb-1">Dr. {{ doctor.user.get_full_name }}</h1>
+                    <p class="lead text-muted mb-2">{{ doctor.specialization }}</p>
+                    
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge bg-info">{{ doctor.years_of_experience }}+ years experience</span>
+                        {% if doctor.is_available %}
+                        <span class="badge bg-success">Available Today</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Not Available</span>
+                        {% endif %}
+                        <span class="badge bg-light text-dark">Rs. {{ doctor.consultation_fee }} fee</span>
+                    </div>
+                </div>
+                
+                <!-- Rating -->
+                <div class="text-end">
+                    <div class="rating mb-1">
+                        <span class="text-warning">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                            <i class="far fa-star"></i>
+                        </span>
+                        <span class="text-muted">(4.3/5)</span>
+                    </div>
+                    <small class="text-muted">Based on 128 reviews</small>
+                </div>
+            </div>
+            
+            <!-- Key Information -->
+            <div class="row mt-4">
+                <div class="col-sm-6">
+                    <p><i class="fas fa-graduation-cap text-primary me-2"></i> <strong>Qualification:</strong> {{ doctor.qualifications }}</p>
+                    <p><i class="fas fa-hospital text-primary me-2"></i> <strong>Hospital:</strong> {{ doctor.hospital }}</p>
+                    <p><i class="fas fa-stethoscope text-primary me-2"></i> <strong>Specialization:</strong> {{ doctor.specialization }}</p>
+                </div>
+                <div class="col-sm-6">
+                    <p><i class="fas fa-map-marker-alt text-primary me-2"></i> <strong>Location:</strong> {{ doctor.city }}</p>
+                    <p><i class="fas fa-id-card text-primary me-2"></i> <strong>License:</strong> {{ doctor.license_number }}</p>
+                    <p><i class="fas fa-money-bill-wave text-primary me-2"></i> <strong>Fee:</strong> Rs. {{ doctor.consultation_fee }}</p>
+                </div>
+            </div>
+            
+            <!-- Available Days -->
+            {% if doctor.available_days %}
+            <div class="mt-3">
+                <p class="mb-1"><strong><i class="fas fa-calendar-day text-primary me-2"></i>Available Days:</strong></p>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for day in doctor.available_days %}
+                    <span class="badge bg-light text-dark">{{ day }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <hr class="my-4">
+    
+    <div class="row">
+        <!-- Left Column: Doctor Information -->
+        <div class="col-lg-8">
+            <!-- About Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-user-md me-2"></i>About Dr. {{ doctor.user.first_name }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ doctor.qualifications|default:"No information provided." }}</p>
+                </div>
+            </div>
+            
+            <!-- Education & Experience -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Qualifications</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ doctor.qualifications }}</p>
+                </div>
+            </div>
+            
+            <!-- Reviews Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>Patient Reviews</h5>
+                    <button class="btn btn-sm btn-outline-primary">Write a Review</button>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            <div class="display-4 text-primary">4.3</div>
+                            <div class="rating mb-2">
+                                <span class="text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <i class="far fa-star"></i>
+                                </span>
+                            </div>
+                            <small class="text-muted">Based on 128 reviews</small>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="rating-bars">
+                                {% for i in "54321" %}
+                                <div class="d-flex align-items-center mb-1">
+                                    <small class="me-2">{{ i }} star</small>
+                                    <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                        <div class="progress-bar bg-warning" style="width: {{ forloop.counter|add:2 }}0%;"></div>
+                                    </div>
+                                    <small class="text-muted">{% widthratio forloop.counter 1 25 %}</small>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="review-list">
+                        <!-- Sample Review -->
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">John Doe</h6>
+                                <small class="text-muted">2 weeks ago</small>
+                            </div>
+                            <div class="rating mb-2">
+                                <span class="text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                </span>
+                            </div>
+                            <p class="mb-0">Dr. {{ doctor.user.first_name }} was very professional and took time to understand my concerns. The diagnosis was accurate and treatment effective.</p>
+                        </div>
+                        
+                        <!-- Another Sample Review -->
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Sarah Johnson</h6>
+                                <small class="text-muted">1 month ago</small>
+                            </div>
+                            <div class="rating mb-2">
+                                <span class="text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </span>
+                            </div>
+                            <p class="mb-0">Excellent doctor! Very knowledgeable and friendly. The wait time was minimal and the staff was courteous.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button class="btn btn-outline-primary">Load More Reviews</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Appointment Booking -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 20px; z-index: 1010;">
+                <!-- Availability Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Book Appointment</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-title">Available Time Slots</h6>
+                        
+                        {% if available_slots %}
+                        <div class="mb-3">
+                            <label for="appointmentDate" class="form-label">Select Date</label>
+                            <input type="date" class="form-control" id="appointmentDate" 
+                                   value="{{ timezone.now|date:'Y-m-d' }}" min="{{ timezone.now|date:'Y-m-d' }}">
+                        </div>
+                        
+                        <div class="time-slots mb-3">
+                            <p class="text-muted small mb-2">Available slots for selected date:</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for slot in available_slots %}
+                                <button type="button" class="btn btn-outline-primary btn-sm time-slot-btn" data-time="{{ slot }}">
+                                    {{ slot }}
+                                </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>No available slots at the moment. Please check back later.
+                        </div>
+                        {% endif %}
+                        
+                        <hr>
+                        
+                        <div class="d-grid">
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#bookingModal" {% if not available_slots %}disabled{% endif %}>
+                                <i class="fas fa-calendar-check me-2"></i> Book Appointment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-phone-alt me-2"></i>Contact Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><i class="fas fa-hospital text-primary me-2"></i> {{ doctor.hospital }}</li>
+                            <li class="mb-2"><i class="fas fa-map-marker-alt text-primary me-2"></i> {{ doctor.city }}</li>
+                            <li class="mb-2"><i class="fas fa-phone text-primary me-2"></i> {{ doctor.user.phone_number|default:"Not provided" }}</li>
+                            <li class="mb-0"><i class="fas fa-envelope text-primary me-2"></i> {{ doctor.user.email }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingModalLabel">Confirm Appointment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Your appointment with <strong>Dr. {{ doctor.user.get_full_name }}</strong></p>
+                <p>Date: <span id="selectedDate" class="fw-bold">{{ timezone.now.date|date:"M d, Y" }}</span></p>
+                <p>Time: <span id="selectedTime" class="fw-bold">Select a time slot</span></p>
+                
+                <form id="bookingForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Reason for visit</label>
+                        <select class="form-select" id="reason">
+                            <option value="">Select a reason</option>
+                            <option value="CHECKUP">Routine Checkup</option>
+                            <option value="CONSULT">General Consultation</option>
+                            <option value="FEVER">Fever/Infection</option>
+                            <option value="INJURY">Injury Treatment</option>
+                            <option value="other">Other (specify below)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="otherReasonContainer" style="display: none;">
+                        <label for="other_reason" class="form-label">Other Reason</label>
+                        <input type="text" class="form-control" id="other_reason" placeholder="Please specify your reason">
+                    </div>
+                    <div class="mb-3">
+                        <label for="symptoms" class="form-label">Symptoms</label>
+                        <textarea class="form-control" id="symptoms" rows="3" placeholder="Please describe your symptoms"></textarea>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> Consultation fee: Rs. {{ doctor.consultation_fee }} will be charged upon confirmation.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmBooking">Confirm Booking</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Message Modal -->
+<div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="messageModalLabel">Message Dr. {{ doctor.user.get_full_name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="messageForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="messageSubject" class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="messageSubject" placeholder="Subject of your message">
+                    </div>
+                    <div class="mb-3">
+                        <label for="messageContent" class="form-label">Message</label>
+                        <textarea class="form-control" id="messageContent" rows="5" placeholder="Type your message here..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="sendMessage">Send Message</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle reason selection
+        const reasonSelect = document.getElementById('reason');
+        const otherReasonContainer = document.getElementById('otherReasonContainer');
+        
+        if (reasonSelect && otherReasonContainer) {
+            reasonSelect.addEventListener('change', function() {
+                if (this.value === 'other') {
+                    otherReasonContainer.style.display = 'block';
+                } else {
+                    otherReasonContainer.style.display = 'none';
+                }
+            });
+        }
+        
+        // Handle time slot selection
+        const timeSlotButtons = document.querySelectorAll('.time-slot-btn');
+        const selectedTimeElement = document.getElementById('selectedTime');
+        const confirmBookingBtn = document.getElementById('confirmBooking');
+        let selectedTimeSlot = null;
+        
+        timeSlotButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                timeSlotButtons.forEach(btn => btn.classList.remove('btn-primary', 'active'));
+                timeSlotButtons.forEach(btn => btn.classList.add('btn-outline-primary'));
+                
+                // Add active class to clicked button
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-primary', 'active');
+                
+                // Update selected time
+                selectedTimeSlot = this.getAttribute('data-time');
+                selectedTimeElement.textContent = selectedTimeSlot;
+                
+                // Enable confirm button
+                if (confirmBookingBtn) {
+                    confirmBookingBtn.disabled = false;
+                }
+            });
+        });
+        
+        // Set default date in modal
+        const appointmentDate = document.getElementById('appointmentDate');
+        const selectedDateElement = document.getElementById('selectedDate');
+        
+        if (appointmentDate && selectedDateElement) {
+            // Format date for display
+            const formatDate = (dateString) => {
+                const options = { month: 'short', day: 'numeric', year: 'numeric' };
+                return new Date(dateString).toLocaleDateString(undefined, options);
+            };
+            
+            selectedDateElement.textContent = formatDate(appointmentDate.value);
+            
+            // Update modal when date changes
+            appointmentDate.addEventListener('change', function() {
+                selectedDateElement.textContent = formatDate(this.value);
+                
+                // In a real application, you would fetch available slots for the selected date
+                // For now, we'll just reset the time selection
+                if (timeSlotButtons.length > 0) {
+                    timeSlotButtons.forEach(btn => {
+                        btn.classList.remove('btn-primary', 'active');
+                        btn.classList.add('btn-outline-primary');
+                    });
+                    selectedTimeElement.textContent = 'Select a time slot';
+                    selectedTimeSlot = null;
+                    
+                    if (confirmBookingBtn) {
+                        confirmBookingBtn.disabled = true;
+                    }
+                }
+            });
+        }
+        
+        // Handle booking confirmation
+        if (confirmBookingBtn) {
+            confirmBookingBtn.addEventListener('click', function() {
+                if (!selectedTimeSlot) {
+                    alert('Please select a time slot for your appointment.');
+                    return;
+                }
+                
+                const reason = document.getElementById('reason').value;
+                if (!reason) {
+                    alert('Please select a reason for your appointment.');
+                    return;
+                }
+                
+                // Here you would typically make an AJAX request to book the appointment
+                const symptoms = document.getElementById('symptoms').value;
+                const otherReason = document.getElementById('other_reason').value;
+                
+                const bookingData = {
+                    doctor: "{{ doctor.id }}",
+                    date: appointmentDate.value,
+                    time: selectedTimeSlot,
+                    reason: reason,
+                    symptoms: symptoms,
+                    other_reason: otherReason
+                };
+                
+                console.log('Booking data:', bookingData);
+                
+                // Show success message
+                alert('Appointment booked successfully! You will receive a confirmation email shortly.');
+                $('#bookingModal').modal('hide');
+            });
+        }
+        
+        // Handle message sending
+        const sendMessageBtn = document.getElementById('sendMessage');
+        if (sendMessageBtn) {
+            sendMessageBtn.addEventListener('click', function() {
+                const subject = document.getElementById('messageSubject').value;
+                const content = document.getElementById('messageContent').value;
+                
+                if (!subject || !content) {
+                    alert('Please fill in both subject and message fields.');
+                    return;
+                }
+                
+                // Here you would typically make an AJAX request to send the message
+                const messageData = {
+                    doctor: "{{ doctor.id }}",
+                    subject: subject,
+                    content: content
+                };
+                
+                console.log('Message data:', messageData);
+                
+                // Show success message
+                alert('Message sent successfully!');
+                $('#messageModal').modal('hide');
+            });
+        }
+    });
+</script>
+{% endblock %}

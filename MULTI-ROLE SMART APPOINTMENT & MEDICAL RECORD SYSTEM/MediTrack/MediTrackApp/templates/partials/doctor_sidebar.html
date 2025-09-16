@@ -1,0 +1,48 @@
+<a
+  href="{% url 'doctor_dashboard' %}"
+  class="list-group-item list-group-item-action"
+>
+  <i class="bi bi-speedometer2"></i> <span class="link-text">Dashboard</span>
+</a>
+<a
+  href="{% url 'doctor_appointments' %}"
+  class="list-group-item list-group-item-action"
+>
+  <i class="bi bi-calendar-check"></i>
+  <span class="link-text">My Appointments</span>
+</a>
+<a
+  href="{% url 'doctor_schedule' %}"
+  class="list-group-item list-group-item-action"
+>
+  <i class="bi bi-calendar-plus"></i>
+  <span class="link-text">Set Availability</span>
+</a>
+<a
+  href="{% url 'doctor_patient_list' %}"
+  class="list-group-item list-group-item-action"
+>
+  <i class="bi bi-file-earmark-medical"></i>
+  <span class="link-text">Patient Records</span>
+</a>
+<a
+  href="{% url 'prescription_list' %}"
+  class="list-group-item list-group-item-action"
+>
+  <i class="bi bi-prescription2"></i>
+  <span class="link-text">Prescriptions</span>
+</a>
+{% comment %} <a
+  href="{% url 'doctor_calendar' %}"
+  class="list-group-item list-group-item-action"
+>
+  <i class="bi bi-calendar-week"></i>
+  <span class="link-text">Appointment Calendar</span>
+</a> {% endcomment %}
+<a
+  href="{% url 'edit_profile' %}"
+  class="list-group-item list-group-item-action"
+>
+  <i class="bi bi-person-lines-fill"></i>
+  <span class="link-text">Doctor Profile</span>
+</a>

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Home - MediTrack{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-primary text-white text-center py-5">
+    <div class="container">
+        <h1 class="fw-bold">Welcome to MediTrack</h1>
+        <p class="lead">Smart Appointment & Medical Record System</p>
+        <a href="{% url 'login' %}" class="btn btn-light btn-lg me-2">Login</a>
+        <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg">Register</a>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container my-5">
+    <h2 class="text-center mb-4">Our Key Features</h2>
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold">Role-Based Dashboards</h5>
+                    <p class="card-text">Separate dashboards for Admin, Doctors, and Patients for better workflow.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold">Online Appointments</h5>
+                    <p class="card-text">Book and manage appointments from anywhere, anytime.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold">Digital Medical Records</h5>
+                    <p class="card-text">Upload and view prescriptions, reports, and health history online.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold">Secure & Reliable</h5>
+                    <p class="card-text">Data encryption ensures your information stays safe.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- About Section -->
+<div class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-4">About MediTrack</h2>
+        <p class="text-center">
+            MediTrack is a smart healthcare management platform that connects doctors and patients seamlessly. 
+            With features like online appointment booking, secure medical record storage, and role-based dashboards, 
+            we make healthcare simple, fast, and accessible for everyone.
+        </p>
+    </div>
+</div>
+{% endblock %}

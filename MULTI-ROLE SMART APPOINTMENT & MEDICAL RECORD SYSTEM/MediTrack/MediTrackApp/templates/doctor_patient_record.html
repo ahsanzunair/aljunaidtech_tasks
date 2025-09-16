@@ -1,0 +1,27 @@
+<h4 class="mt-5">Patient Medical Records</h4>
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Patient</th>
+            <th>File Name</th>
+            <th>Uploaded On</th>
+            <th>Download</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in medical_records %}
+        <tr>
+            <td>{{ record.patient.user.get_full_name }}</td>
+            <td>{{ record.file.name|basename }}</td>
+            <td>{{ record.uploaded_at|date:"d M Y, h:i A" }}</td>
+            <td>
+                <a href="{{ record.file.url }}" class="btn btn-sm btn-primary" target="_blank">View / Download</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="text-center">No medical records found</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

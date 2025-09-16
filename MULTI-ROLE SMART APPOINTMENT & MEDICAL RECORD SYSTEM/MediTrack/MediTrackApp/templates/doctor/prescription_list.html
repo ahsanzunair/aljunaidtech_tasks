@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Prescriptions - MediTrack{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>My Prescriptions</h6>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-3">
+                        {% if prescriptions %}
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Date</th>
+                                    <th>Diagnosis</th>
+                                    <th>Follow-up</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prescription in prescriptions %}
+                                <tr>
+                                    <td>{{ prescription.appointment.patient.user.get_full_name }}</td>
+                                    <td>{{ prescription.created_at|date:"M d, Y" }}</td>
+                                    <td>{{ prescription.diagnosis|truncatewords:8 }}</td>
+                                    <td>
+                                        {% if prescription.follow_up_date %}
+                                            {{ prescription.follow_up_date|date:"M d, Y" }}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'edit_prescription' prescription.id %}" 
+                                        class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <a href="{% url 'delete_prescription' prescription.id %}" 
+                                        class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i> Delete
+                                        </a>
+                                    </td>
+
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-medical fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No prescriptions found</h5>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

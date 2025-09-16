@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/registration/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container min-vh-100 d-flex align-items-center justify-content-center py-5">
+    <div class="login-container">
+        <div class="text-center mb-4">
+            {% comment %} <img src="{% static 'images/logo.png' %}" alt="Appointment System Logo" height="60"> {% endcomment %}
+            <h2 class="d-none">MULTI-ROLE SMART APPOINTMENT SYSTEM</h2>
+        </div>
+        
+        <div class="login-card card">
+            <div class="card-header">
+                <h3><i class="fas fa-sign-in-alt me-2"></i>Login to Your Account</h3>
+            </div>
+            
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label"><i class="fas fa-user me-1"></i> Username</label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-1">{{ form.username.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label"><i class="fas fa-lock me-1"></i> Password</label>
+                        <div class="password-field">
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                                <span class="input-group-text password-toggle" id="passwordToggle">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        {% if form.password.errors %}
+                            <div class="text-danger small mt-1">{{ form.password.errors|striptags }}</div>
+                        {% endif %}
+                        <div class="text-end mt-2">
+                            <a href="{% url 'password_reset' %}" class="text-primary small">Forgot Password?</a>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="rememberMe" name="remember_me">
+                        <label class="form-check-label" for="rememberMe">Remember me</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </button>
+                    
+                    {% comment %} <div class="divider">
+                        <span>Or continue with</span>
+                    </div>
+                    
+                    <div class="social-login">
+                        <a href="#" class="social-btn google-btn">
+                            <i class="fab fa-google"></i>
+                        </a>
+                        <a href="#" class="social-btn facebook-btn">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-btn linkedin-btn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div> {% endcomment %}
+                </form>
+                
+                <div class="additional-links">
+                    <p class="mb-0">Don't have an account? <a href="{% url 'register' %}" class="fw-semibold">Register</a></p>
+                    {% comment %} <p class="mt-2"><a href="{% url 'guest_booking' %}">Continue as guest for appointment booking</a></p> {% endcomment %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <p class="text-muted small">© 2023 Multi-Role Smart Appointment System. All rights reserved.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password visibility toggle
+        const passwordToggle = document.getElementById('passwordToggle');
+        const passwordField = document.getElementById('password');
+        
+        if (passwordToggle) {
+            passwordToggle.addEventListener('click', function() {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                
+                // Toggle eye icon
+                const eyeIcon = this.querySelector('i');
+                if (type === 'password') {
+                    eyeIcon.classList.remove('fa-eye-slash');
+                    eyeIcon.classList.add('fa-eye');
+                } else {
+                    eyeIcon.classList.remove('fa-eye');
+                    eyeIcon.classList.add('fa-eye-slash');
+                }
+            });
+        }
+        
+        // Form validation
+        const loginForm = document.querySelector('form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(e) {
+                const username = document.getElementById('username');
+                const password = document.getElementById('password');
+                
+                if (!username.value.trim()) {
+                    e.preventDefault();
+                    alert('Please enter your username');
+                    username.focus();
+                    return false;
+                }
+                
+                if (!password.value) {
+                    e.preventDefault();
+                    alert('Please enter your password');
+                    password.focus();
+                    return false;
+                }
+            });
+        }
+        
+        // Check if there are error messages and focus on the first field with error
+        const errorElements = document.querySelectorAll('.text-danger');
+        if (errorElements.length > 0) {
+            const firstErrorField = document.getElementById('username');
+            if (firstErrorField) firstErrorField.focus();
+        }
+    });
+</script>
+{% endblock %}

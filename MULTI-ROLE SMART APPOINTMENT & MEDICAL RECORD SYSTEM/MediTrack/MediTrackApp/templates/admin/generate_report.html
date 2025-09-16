@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Generate Report | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/reports_analytics.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Generate Report</h1>
+        <a href="{% url 'reports_analytics' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Reports
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Report Parameters</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" id="reportForm">
+                {% csrf_token %}
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        {{ form.report_type.label_tag }}
+                        {{ form.report_type }}
+                        {% if form.report_type.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.report_type.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        {{ form.format.label_tag }}
+                        {{ form.format }}
+                        {% if form.format.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.format.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Date Range Fields (shown/hidden based on report type) -->
+                    <div class="col-md-6" id="dateRangeFields" style="display: none;">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                {{ form.start_date.label_tag }}
+                                {{ form.start_date }}
+                                {% if form.start_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.start_date.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.end_date.label_tag }}
+                                {{ form.end_date }}
+                                {% if form.end_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.end_date.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Doctor Field (shown only for prescription reports) -->
+                    <div class="col-md-6" id="doctorField" style="display: none;">
+                        {{ form.doctor.label_tag }}
+                        {{ form.doctor }}
+                        {% if form.doctor.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.doctor.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-end mt-4 gap-2">
+                    <button type="submit" name="save_report" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save & Download
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-download"></i> Download Only
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Show/hide fields based on report type
+    function toggleFields() {
+        const reportType = $('#id_report_type').val();
+        
+        // Hide all optional fields first
+        $('#dateRangeFields, #doctorField').hide();
+        
+        // Show relevant fields
+        if (reportType === 'appointment') {
+            $('#dateRangeFields').show();
+        } else if (reportType === 'prescription') {
+            $('#doctorField').show();
+        }
+    }
+    
+    // Initial call
+    toggleFields();
+    
+    // On report type change
+    $('#id_report_type').change(toggleFields);
+    
+    // Form submission handling
+    $('#reportForm').on('submit', function() {
+        const reportType = $('#id_report_type').val();
+        const format = $('#id_format').val();
+        
+        // Additional validation
+        if (reportType === 'appointment') {
+            const startDate = $('#id_start_date').val();
+            const endDate = $('#id_end_date').val();
+            
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates for appointment reports');
+                return false;
+            }
+        }
+        
+        return true;
+    });
+});
+</script>
+{% endblock %}

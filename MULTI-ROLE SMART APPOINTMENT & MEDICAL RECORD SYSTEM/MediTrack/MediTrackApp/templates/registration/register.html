@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register | MULTI-ROLE SMART APPOINTMENT SYSTEM{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h2 class="mb-1">Create Your Account</h2>
+                    <p class="mb-0 opacity-75">Join our multi-role appointment system</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if messages %}
+                        <div class="mb-4">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Personal Information Section -->
+                        <div class="mb-4 pb-3 border-bottom">
+                            <h3 class="h5 text-primary mb-3">Personal Information</h3>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.first_name.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.last_name.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                                    {{ form.gender }}
+                                    {% if form.gender.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.gender.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                                    {{ form.date_of_birth }}
+                                    {% if form.date_of_birth.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.date_of_birth.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.profile_pic.id_for_label }}" class="form-label">Profile Picture (Optional)</label>
+                                {{ form.profile_pic }}
+                                {% if form.profile_pic.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.profile_pic.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Account Details Section -->
+                        <div class="mb-4 pb-3 border-bottom">
+                            <h3 class="h5 text-primary mb-3">Account Details</h3>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.username.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.email.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
+                                {{ form.phone_number }}
+                                {% if form.phone_number.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.phone_number.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+                                    {{ form.password1 }}
+                                    {% if form.password1.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.password1.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+                                    {{ form.password2 }}
+                                    {% if form.password2.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.password2.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Account Type Section -->
+                        <div class="mb-4">
+                            <h3 class="h5 text-primary mb-3">Account Type</h3>
+                            
+                            <div class="row">
+                                {% for value, name in form.role.field.choices %}
+                                <div class="col-md-6 mb-3">
+                                    <input type="radio" class="btn-check" name="role" id="role_{{ value }}" value="{{ value }}" 
+                                           {% if form.role.value == value %}checked{% endif %} autocomplete="off">
+                                    <label class="btn btn-outline-primary w-100 py-3" for="role_{{ value }}">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="mb-2">
+                                                {% if value == "doctor" %}
+                                                <i class="fas fa-user-md fa-2x"></i>
+                                                {% else %}
+                                                <i class="fas fa-user-injured fa-2x"></i>
+                                                {% endif %}
+                                            </div>
+                                            <h4 class="h6 mb-0">{{ name }}</h4>
+                                        </div>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            {% if form.role.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.role.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Form Footer -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">Create Account</button>
+                            <p class="text-muted">
+                                Already have an account? <a href="{% url 'login' %}" class="text-decoration-none">Sign In</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.form-control, .form-select {
+    padding: 12px 15px;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #4a6fa5;
+    box-shadow: 0 0 0 0.25rem rgba(74, 111, 165, 0.25);
+}
+
+.btn-check:checked + .btn {
+    background-color: rgba(74, 111, 165, 0.1);
+    border-color: #4a6fa5;
+    color: #4a6fa5;
+}
+
+.invalid-feedback {
+    display: block;
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add Bootstrap form-control class to all input and select elements
+    const inputs = document.querySelectorAll('input:not([type="radio"]), select, textarea');
+    inputs.forEach(input => {
+        input.classList.add('form-control');
+    });
+    
+    // Add Bootstrap form-select class to select elements
+    const selects = document.querySelectorAll('select');
+    selects.forEach(select => {
+        select.classList.add('form-select');
+    });
+    
+    // Date field max attribute (prevent future dates)
+    const dobField = document.getElementById('{{ form.date_of_birth.id_for_label }}');
+    if (dobField) {
+        const today = new Date();
+        const maxDate = today.toISOString().split('T')[0];
+        dobField.setAttribute('max', maxDate);
+    }
+    
+    // Form validation
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+});
+</script>
+{% endblock %}

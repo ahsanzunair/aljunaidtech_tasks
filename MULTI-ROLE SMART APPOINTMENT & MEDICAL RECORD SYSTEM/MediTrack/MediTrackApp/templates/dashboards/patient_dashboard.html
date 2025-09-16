@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Patient Dashboard - MediTrack{% endblock %}
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{% static "css/patient/dashboard.css" %}">
+{% endblock %}
+
+{% block content %}
+    <!-- Header Section -->
+    <header class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-5 fw-bold">Patient Dashboard</h1>
+                    <p class="lead">Welcome back! Here's your medical overview.</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="d-flex align-items-center justify-content-md-end gap-3">
+                        <div class="text-end">
+                            <h5 class="mb-0">{{request.user.get_full_name}}</h5>
+                            <small>Patient ID: {{request.user.id}}</small>
+                        </div>
+                        <img src="https://ui-avatars.com/api/?name={{request.user.get_full_name}}&background=random&size=50&rounded=true" alt="Profile" class="rounded-circle">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Welcome and Quick Actions -->
+        <div class="welcome-card">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h3>Good morning, {{request.user.get_full_name}}!</h3>
+                    <p class="text-muted">You have {{appointments.count}} upcoming appointments this week.</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="quick-actions">
+                        <a href="{% url 'book_appointment' %}" class="btn btn-primary action-btn">
+                            <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                        </a>
+                        <a href="{% url 'upload_medical_record' %}" class="btn btn-outline-primary action-btn">
+                            <i class="fas fa-file-upload me-2"></i>Upload Record
+                        </a>
+                        {% comment %} <a href="#" class="btn btn-light action-btn">
+                            <i class="fas fa-question-circle me-2"></i>Help
+                        </a> {% endcomment %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row">
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card stat-card text-white bg-primary">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title mb-0">UPCOMING APPOINTMENTS</h6>
+                                <p class="fs-2 fw-bold mb-0">{{ appointments.count }}</p>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card stat-card text-white bg-success">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title mb-0">PRESCRIPTIONS</h6>
+                                <p class="fs-2 fw-bold mb-0">{{ prescriptions.count }}</p>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-prescription"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card stat-card text-white bg-info">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title mb-0">MEDICAL RECORDS</h6>
+                                <p class="fs-2 fw-bold mb-0">{{record}}</p>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-file-medical"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card stat-card text-white bg-warning">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title mb-0">UNREAD MESSAGES</h6>
+                                <p class="fs-2 fw-bold mb-0">3</p>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments Section -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+                <h4 class="mb-0">Appointments</h4>
+                <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Specialization</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appt in appointments %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="https://ui-avatars.com/api/?name=Dr.{{ appt.doctor.user.get_full_name }}&background=random&size=36&rounded=true" alt="Doctor" class="rounded-circle me-2">
+                                    <div>Dr. {{ appt.doctor.user.get_full_name }}</div>
+                                </div>
+                            </td>
+                            <td>Cardiologist</td>
+                            <td>{{ appt.date }}</td>
+                            <td>{{ appt.time }}</td>
+                            <td>
+                                {% if appt.status == 'scheduled' %}
+                                <span class="status-badge status-scheduled">{{ appt.get_status_display }}</span>
+                                {% elif appt.status == 'completed' %}
+                                <span class="status-badge status-completed">{{ appt.get_status_display }}</span>
+                                {% else %}
+                                <span class="status-badge status-cancelled">{{ appt.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-outline-secondary"><i class="fas fa-edit"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <i class="fas fa-calendar-times fa-2x text-muted mb-2"></i>
+                                <p class="text-muted">No appointments found</p>
+                                <a href="{% url 'book_appointment' %}" class="btn btn-primary btn-sm">Book Your First Appointment</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Prescriptions Section -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+                <h4 class="mb-0">Prescriptions</h4>
+                <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Appointment Date</th>
+                            <th>Doctor</th>
+                            <th>Diagnosis</th>
+                            <th>Medications</th>
+                            <th>Follow-up Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pres in prescriptions %}
+                        <tr>
+                            <td>{{ pres.appointment.date }}</td>
+                            <td>Dr. {{ pres.appointment.doctor.user.get_full_name }}</td>
+                            <td>{{ pres.diagnosis }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Medications">
+                                    <i class="fas fa-pills"></i> View
+                                </button>
+                            </td>
+                            <td>{{ pres.follow_up_date|default:"N/A" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <i class="fas fa-file-prescription fa-2x text-muted mb-2"></i>
+                                <p class="text-muted">No prescriptions found</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Upcoming Appointments Card -->
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Recent Medical Records -->
+                <div class="table-container">
+                    <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+                        <h4 class="mb-0">Medical Records</h4>
+                        <a href="{% url 'upload_medical_record' %}" class="btn btn-sm btn-outline-primary">Upload New</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Record Type</th>
+                                    <th>Date</th>
+                                    <th>Provider</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="fas fa-file-medical me-2"></i> Lab Results</td>
+                                    <td>Oct 12, 2023</td>
+                                    <td>City Lab Diagnostics</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i> Download</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-x-ray me-2"></i> X-Ray Scan</td>
+                                    <td>Sep 28, 2023</td>
+                                    <td>MedImage Center</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i> Download</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-file-pdf me-2"></i> Doctor's Report</td>
+                                    <td>Sep 15, 2023</td>
+                                    <td>Dr. Sarah Johnson</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i> Download</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Upcoming Appointments Widget -->
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">Upcoming Appointments</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if appointments %}
+                            {% for appt in appointments|slice:":3" %}
+                            <div class="d-flex mb-3 pb-3 border-bottom">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-primary text-white rounded p-2 text-center" style="width: 50px;">
+                                        <div class="fw-bold">{{ appt.date|date:"d" }}</div>
+                                        <small>{{ appt.date|date:"M" }}</small>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-0">Dr. {{ appt.doctor.user.get_full_name }}</h6>
+                                    <small class="text-muted">{{ appt.time }}</small>
+                                    <div>
+                                        <span class="badge bg-light text-dark">{{ appt.get_status_display }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-calendar-times fa-2x text-muted mb-2"></i>
+                                <p class="text-muted">No upcoming appointments</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a href="{% url 'book_appointment' %}" class="btn btn-primary w-100">Book New Appointment</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="text-center py-4 text-muted">
+            <p>© 2023 MediTrack. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    </script>
+{% endblock %}

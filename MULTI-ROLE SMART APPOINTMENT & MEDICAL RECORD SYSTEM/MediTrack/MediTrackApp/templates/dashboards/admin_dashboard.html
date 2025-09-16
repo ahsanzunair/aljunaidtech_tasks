@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard | MULTI-ROLE SMART APPOINTMENT & MEDICAL RECORD SYSTEM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">Admin Dashboard</h1>
+        <span class="text-muted">Last updated: {% now "DATETIME_FORMAT" %}</span>
+    </div>
+
+    <!-- Welcome Message -->
+    <div class="alert alert-info mb-4">
+        <h4 class="alert-heading">Welcome back, {{ user.get_full_name }}!</h4>
+        <p class="mb-0">Here's what's happening with your system today.</p>
+    </div>
+    
+    <!-- Statistics Cards Row -->
+    <div class="row mb-4">
+        <!-- Users Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Users
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ user_stats.total }}</div>
+                            <div class="mt-2 text-sm">
+                                <span class="text-success mr-2">Doctors: {{ user_stats.doctors }}</span>
+                                <span class="text-info">Patients: {{ user_stats.patients }}</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people-fill fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Today's Appointments
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ appointment_stats.today }}</div>
+                            <div class="mt-2 text-sm">
+                                <span class="text-success mr-2">Completed: {{ appointment_stats.completed }}</span>
+                                <span class="text-warning">Pending: {{ appointment_stats.pending }}</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-calendar-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                System Status
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ user_stats.active }} Active</div>
+                            <div class="mt-2 text-sm">
+                                <span class="text-success mr-2">Active: {{ user_stats.active }}</span>
+                                <span class="text-danger">Blocked: {{ user_stats.blocked }}</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Appointments Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total Appointments
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ appointment_stats.total }}</div>
+                            <div class="mt-2 text-sm">
+                                <span class="text-primary mr-2">This week: N/A</span>
+                                <span class="text-info">This month: N/A</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-clipboard-data fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions Row -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="m-0 font-weight-bold"><i class="bi bi-lightning-fill me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="{% url 'user_management' %}" class="btn btn-primary btn-icon-split">
+                            <span class="icon"><i class="bi bi-people-fill"></i></span>
+                            <span class="text">Manage Users</span>
+                        </a>
+                        <a href="{% url 'appointment_management' %}" class="btn btn-success btn-icon-split">
+                            <span class="icon"><i class="bi bi-calendar-check"></i></span>
+                            <span class="text">View Appointments</span>
+                        </a>
+                        <a href="{% url 'create_announcements' %}" class="btn btn-info btn-icon-split">
+                            <span class="icon"><i class="bi bi-megaphone"></i></span>
+                            <span class="text">Post Announcement</span>
+                        </a>
+                        <a href="{% url 'generate_report' %}" class="btn btn-secondary btn-icon-split">
+                            <span class="icon"><i class="bi bi-file-earmark-bar-graph"></i></span>
+                            <span class="text">Generate Reports</span>
+                        </a>
+                        <a href="{% url 'system_settings' %}" class="btn btn-warning btn-icon-split">
+                            <span class="icon"><i class="bi bi-gear-fill"></i></span>
+                            <span class="text">System Settings</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity and Announcements -->
+    <div class="row">
+        <!-- Recent Activity -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="m-0 font-weight-bold"><i class="bi bi-clock-history me-2"></i>Recent Activity</h5>
+                        <span class="badge bg-light text-primary">{{ recent_activity|length }} activities</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Time</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_activity %}
+                                <tr>
+                                    <td><small class="text-muted">{{ log.created_at|timesince }} ago</small></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0">
+                                                <img src="{% if log.user.profile_pic %}{{ log.user.profile_pic.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
+                                                     class="rounded-circle" width="30" height="30" alt="{{ log.user.get_full_name }}">
+                                            </div>
+                                            <div class="flex-grow-1 ms-2">
+                                                {{ log.user.get_full_name|default:"System" }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if log.action == 'create' %}success{% elif log.action == 'update' %}info{% elif log.action == 'delete' %}danger{% else %}secondary{% endif %}">
+                                            {{ log.get_action_display }}
+                                        </span>
+                                    </td>
+                                    <td><small>{{ log.details|truncatechars:40|default:"No details" }}</small></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">
+                                        <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                                        No recent activity found
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if recent_activity %}
+                    <div class="text-center mt-3">
+                        <a href="{% url 'activity_logs' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-list-ul me-1"></i>View All Activity
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Announcements -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="m-0 font-weight-bold"><i class="bi bi-megaphone me-2"></i>Latest Announcements</h5>
+                        <span class="badge bg-light text-primary">{{ announcements|length }} announcements</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if announcements %}
+                    <div class="list-group list-group-flush">
+                        {% for announcement in announcements %}
+                        <div class="list-group-item border-0">
+                            <div class="d-flex align-items-start mb-2">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 text-primary">{{ announcement.title }}</h6>
+                                    <p class="mb-1 text-dark">{{ announcement.content|truncatewords:20 }}</p>
+                                </div>
+                                <span class="badge bg-{% if announcement.priority == 'high' %}danger{% elif announcement.priority == 'medium' %}warning{% else %}info{% endif %} ms-2">
+                                    {{ announcement.get_priority_display }}
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>{{ announcement.created_at|timesince }} ago
+                                </small>
+                                <span class="badge bg-{% if announcement.is_active %}success{% else %}secondary{% endif %}">
+                                    {% if announcement.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% if not forloop.last %}<hr class="my-2 mx-3">{% endif %}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-megaphone display-4 d-block mb-2"></i>
+                        No announcements available
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'announcements' %}" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="bi bi-grid me-1"></i>View All Announcements
+                    </a>
+                </div>
+            </div>
+
+            <!-- System Status Widget -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-info text-white py-3">
+                    <h5 class="m-0 font-weight-bold"><i class="bi bi-heart-pulse me-2"></i>System Health</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Database</span>
+                        <span class="badge bg-success">Online</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Storage</span>
+                        <span class="badge bg-success">Healthy</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Cache</span>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Uptime</span>
+                        <span class="badge bg-info">24/7</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Auto refresh dashboard every 5 minutes
+    setInterval(function() {
+        window.location.reload();
+    }, 300000);
+
+    // Add hover effects to cards
+    $('.card').hover(
+        function() {
+            $(this).addClass('shadow-lg').css('transform', 'translateY(-2px)');
+        },
+        function() {
+            $(this).removeClass('shadow-lg').css('transform', 'translateY(0)');
+        }
+    );
+
+    // Initialize tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // Toast notifications for new activities (if any)
+    {% if messages %}
+    {% for message in messages %}
+    showToast('{{ message.tags }}', '{{ message }}');
+    {% endfor %}
+    {% endif %}
+});
+
+function showToast(type, message) {
+    // Simple toast notification implementation
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type} border-0 position-fixed top-0 end-0 m-3`;
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    new bootstrap.Toast(toast).show();
+}
+</script>
+{% endblock %}
